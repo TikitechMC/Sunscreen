@@ -8,6 +8,7 @@ import me.combimagnetron.sunscreen.neo.event.MenuTickEndEvent;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponent;
 import me.combimagnetron.sunscreen.neo.render.engine.phase.RenderPhase;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
+import me.combimagnetron.sunscreen.SunscreenLibrary;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,13 +59,14 @@ public final class RenderPipeline {
             state = pair.left();
             context = pair.right();
             Dispatcher.dispatcher().post(new MenuTickEndEvent(menuUuid, currentTick));
-            if (state.nextType() == RenderPhase.Process.class) {
+            if (state != null && state.nextType() == RenderPhase.Process.class) {
                 state = new RenderPhase.Process(queuedElements.values(), user);
             }
             if (context.stop()) stop();
         } catch (Exception e) {
+            SunscreenLibrary.library().logger().error("Tick failed in phase {} - pipeline stopped",
+                    state != null ? state.getClass().getSimpleName() : "null", e);
             stop();
-            throw new RuntimeException("RenderPipeline tick failed", e);
         }
     }
 

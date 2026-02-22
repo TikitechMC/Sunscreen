@@ -211,7 +211,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                     if (exists) cache.update(encodedRenderChunk, id);
                     return encodedRenderChunk;
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Failed to encode chunk at pos=" + chunk.position() + " scale=" + chunk.scale(), e);
                 }
             }).toList();
         }
