@@ -4,13 +4,15 @@ import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+
 public interface RenderChunk {
 
     @NotNull BufferedColorSpace bufferedColorSpace();
 
     @NotNull Vec3f position();
 
-    float scale();
+    @NotNull BigDecimal scale();
 
     int contentHash();
 

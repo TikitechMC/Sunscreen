@@ -1,14 +1,14 @@
 package me.combimagnetron.sunscreen.neo.render.engine.grid;
 
-import me.combimagnetron.passport.util.math.Vec2f;
 import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 public record ProcessedRenderChunk(@NotNull BufferedColorSpace bufferedColorSpace,
-                                   @NotNull Vec3f position, float scale) implements RenderChunk {
+                                   @NotNull Vec3f position, @NotNull BigDecimal scale) implements RenderChunk {
 
     @Override
     public int contentHash() {

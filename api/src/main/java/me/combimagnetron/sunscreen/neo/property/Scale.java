@@ -10,6 +10,9 @@ import me.combimagnetron.sunscreen.util.helper.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> implements Property<Float, Scale> {
     private static final Scale DEFAULT = Scale.fixed(1.56f);
     private static final PropertyHandler<Scale> HANDLER = (element, context, scale) -> null;
@@ -66,6 +69,10 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
     @Override
     public void add(FloatRelativeBuilder<Scale> scaleFloatRelativeBuilder, Void unused) {
 
+    }
+
+    public @NotNull BigDecimal rounded() {
+        return new BigDecimal(Float.toString(value)).setScale(3, RoundingMode.HALF_UP);
     }
 
     public static class PropertyHandlerImpl implements PropertyHandler<Scale> {

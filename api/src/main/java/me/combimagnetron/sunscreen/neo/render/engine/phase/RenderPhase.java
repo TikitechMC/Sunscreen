@@ -1,6 +1,7 @@
 package me.combimagnetron.sunscreen.neo.render.engine.phase;
 
 import com.google.common.graph.Traverser;
+import com.google.common.math.BigDecimalMath;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.floats.Float2ObjectArrayMap;
 import me.combimagnetron.passport.util.math.Vec2i;
@@ -28,6 +29,8 @@ import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -43,7 +46,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Process implements RenderPhase<Draw> {
-        private final Float2ObjectArrayMap<List<ElementLike<?>>> elementsByScale = new Float2ObjectArrayMap<>();
+        private final Map<BigDecimal, List<ElementLike<?>>> elementsByScale = new HashMap<>();
         private final List<ElementLike<?>> elementList = new LinkedList<>();
         private final SunscreenUser<?> user;
         private final Viewport viewport;
@@ -53,7 +56,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             this.viewport = user.screenInfo().viewport();
             this.user = user;
             for (ElementLike<?> unfilteredElement : unfilteredElements) {
-                Float scale = unfilteredElement.scale().value();
+                BigDecimal scale = unfilteredElement.scale().rounded();
                 List<ElementLike<?>> list = elementsByScale.computeIfAbsent(scale, (_) -> new ArrayList<>());
                 list.add(unfilteredElement);
             }
@@ -93,12 +96,12 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Draw implements RenderPhase<Encode> {
-        private final Map<Float, Canvas> canvasses = new HashMap<>();
-        private final Map<Float, List<ElementLike<?>>> scaleSeparated;
+        private final Map<BigDecimal, Canvas> canvasses = new HashMap<>();
+        private final Map<BigDecimal, List<ElementLike<?>>> scaleSeparated;
         private final SunscreenUser<?> user;
         private final Viewport viewport;
 
-        public Draw(Map<Float, List<ElementLike<?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
+        public Draw(Map<BigDecimal, List<ElementLike<?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
             this.viewport = viewport;
             this.scaleSeparated = scaleSeparated;
             this.user = user;
@@ -111,8 +114,8 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
 
         @Override
         public @NotNull Pair<Encode, RenderContext> advance(@NonNull RenderContext renderContext) {
-            for (Map.Entry<Float, List<ElementLike<?>>> entry : scaleSeparated.entrySet()) {
-                float scale = entry.getKey();
+            for (Map.Entry<BigDecimal, List<ElementLike<?>>> entry : scaleSeparated.entrySet()) {
+                BigDecimal scale = entry.getKey();
                 Vec2i viewportVec = viewport.currentView();
                 Vec2i canvasSize = Vec2i.of((viewportVec.x() + 127) & ~127, (viewportVec.y() + 127) & ~127);
                 canvasses.computeIfAbsent(scale, _ -> Canvas.empty(canvasSize));
@@ -125,24 +128,12 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                 }
             }
 
-            final RenderCache cache = renderContext.renderCache();
-
-            Set<Float> allCurrentScales = new HashSet<>();
-            for (ElementLike<?> element : renderContext.tree()) {
-                allCurrentScales.add(element.scale().value());
-            }
-
-            List<Float> scalesToRemove = new ArrayList<>();
-            for (float scale : cache.scales()) {
-                if (!allCurrentScales.contains(scale)) {
-                    scalesToRemove.add(scale);
+            RenderCache cache = renderContext.renderCache();
+            for (BigDecimal scale : cache.scales()) {
+                if (scaleSeparated.containsKey(scale)) {
+                    continue;
                 }
-            }
-
-            for (float scale : scalesToRemove) {
-                System.out.println(scale);
                 renderContext.markedForRemoval().addAll(cache.idsByScale(scale));
-                cache.remove(scale);
             }
             return Pair.of(new Encode(user), renderContext.withStart(canvasses));
         }
@@ -166,8 +157,8 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         @Override
         public @NotNull Pair<Send, RenderContext> advance(@NonNull RenderContext renderContext) {
             List<ProcessedRenderChunk> changedChunks = new ArrayList<>();
-            for (Map.Entry<Float, Canvas> entry : renderContext.start().entrySet()) {
-                float scale = entry.getKey();
+            for (Map.Entry<BigDecimal, Canvas> entry : renderContext.start().entrySet()) {
+                BigDecimal scale = entry.getKey();
                 Canvas canvas = entry.getValue();
                 Vec2i canvasSize = canvas.size();
                 int chunksX = canvasSize.x() / CHUNK_SIZE;
@@ -237,8 +228,9 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             RenderCache renderCache = renderContext.renderCache();
             PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
             final Location location = user.eyeLocation();
-            for (Integer id : renderContext.markedForRemoval()) {
-                intermediate.removeEntity(user, id);
+            RenderCache cache = renderContext.renderCache();
+            for (Integer i : renderContext.markedForRemoval()) {
+                cache.remove(i, user);
             }
             for (EncodedRenderChunk chunk : chunks) {
                 Integer mapId = renderCache.byPosAndScale(chunk.scale(), chunk.position());

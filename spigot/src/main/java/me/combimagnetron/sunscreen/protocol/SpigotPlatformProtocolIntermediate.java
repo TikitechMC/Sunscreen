@@ -17,21 +17,26 @@ import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3i;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import me.combimagnetron.passport.internal.entity.Entity;
 import me.combimagnetron.passport.internal.entity.impl.passive.horse.Horse;
 import me.combimagnetron.passport.internal.entity.impl.tile.ItemFrame;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
+import me.combimagnetron.passport.internal.network.Connection;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
+import me.combimagnetron.sunscreen.util.Scheduler;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class SpigotPlatformProtocolIntermediate implements PlatformProtocolIntermediate {
     private static final WrapperPlayServerUpdateAttributes.PropertyModifier MODIFIER = new WrapperPlayServerUpdateAttributes.PropertyModifier(UUID.randomUUID(), 0, WrapperPlayServerUpdateAttributes.PropertyModifier.Operation.MULTIPLY_BASE);
@@ -90,6 +95,8 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         ItemStack itemStack = ItemStack.builder().type(ItemTypes.FILLED_MAP).component(ComponentTypes.MAP_ID, mapId).build();
         ItemFrame upper = ItemFrame.frame(loc2Vec3(location), itemStack);
         ItemFrame lower = ItemFrame.frame(loc2Vec3(location), itemStack);
+        upper.id(Entity.EntityId.of(mapId));
+        lower.id(Entity.EntityId.of(mapId - 500));
         upper.invisible(true);
         upper.direction(ItemFrame.Direction.UP);
         lower.invisible(true);
@@ -190,6 +197,14 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         WrapperPlayServerWindowItems windowItems = new WrapperPlayServerWindowItems(-10_000, 0, items, null);
         user.connection().send(openWindow);
         user.connection().send(windowItems);
+//        Player player = (Player) user.platformSpecificPlayer();
+//        Scheduler.repeat(() -> {
+//            WrapperPlayServerBundle bundle = new WrapperPlayServerBundle();
+//            WrapperPlayServerCloseWindow closeWindow = new WrapperPlayServerCloseWindow();
+//            WrapperPlayServerSetSlot slot = new WrapperPlayServerSetSlot(0, 0, 0, ItemStack.builder().type(ItemTypes.WRITABLE_BOOK).build());
+//            WrapperPlayServerOpenBook openBook = new WrapperPlayServerOpenBook(InteractionHand.MAIN_HAND);
+//            send(user, bundle, closeWindow, slot, openBook, bundle);
+//        }, new Scheduler.Duration(50, TimeUnit.MILLISECONDS));
     }
 
     private static @NotNull Vector3d loc2Vec3(@NotNull Location location) {
@@ -198,6 +213,13 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
 
     private static @NotNull com.github.retrooper.packetevents.protocol.world.Location vec32PeLoc(@NotNull Vector3d position, @NotNull Vector3d rotation) {
         return new com.github.retrooper.packetevents.protocol.world.Location(new com.github.retrooper.packetevents.util.Vector3d(position.x(), position.y(), position.z()), (float) rotation.x(), (float) rotation.y());
+    }
+
+    private static void send(@NotNull SunscreenUser<?> user, @NotNull PacketWrapper<?>... wrappers) {
+        Connection connection = user.connection();
+        for (PacketWrapper<?> wrapper : wrappers) {
+            connection.send(wrapper);
+        }
     }
 
     private static @NotNull WrapperPlayServerEntityEquipment horseEquipment(@NotNull String texturePath, int id, EquipmentSlot equipmentSlot) {

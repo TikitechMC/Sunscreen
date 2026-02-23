@@ -150,7 +150,7 @@ public class MapEncoderTest {
                 }
             }
             // Write metadata
-            out.writeBits(32, Float.floatToIntBits(renderChunk.scale()));
+            out.writeBits(32, Float.floatToIntBits(renderChunk.scale().floatValue()));
             out.writeBits(32, Float.floatToIntBits(renderChunk.position().x()));
             out.writeBits(32, Float.floatToIntBits(renderChunk.position().y()));
             out.writeBits(32, Float.floatToIntBits(renderChunk.position().z()));

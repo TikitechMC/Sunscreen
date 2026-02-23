@@ -9,6 +9,7 @@ import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
+import me.combimagnetron.sunscreen.neo.property.Scale;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
@@ -39,6 +40,7 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         boolean hover = HoverHelper.in(this, cursor);
         if (hover && context.leftPressed()) click = 6;
         InputHandler handler = inputHandler();
+        float currentScale = scale().value();
         if (!hover && phase != ElementPhase.DEFAULT) {
             phase = ElementPhase.DEFAULT;
             handler.cursor(CursorStyle.pointer());
@@ -46,6 +48,7 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         }
         if (click > 0) {
             click -= 1;
+            if (click == 1) scale(Scale.fixed(currentScale - 0.2f));
             phase = ElementPhase.CLICK;
         } else if (hover) {
             phase = ElementPhase.HOVER;

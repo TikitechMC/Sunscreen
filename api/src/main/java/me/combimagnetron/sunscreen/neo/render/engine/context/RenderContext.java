@@ -12,12 +12,13 @@ import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public final class RenderContext {
     private final RenderCache renderCache;
     private final Collection<byte[]> bytes;
-    private final Map<Float, Canvas> canvasses;
+    private final Map<BigDecimal, Canvas> canvasses;
     private final Collection<MenuComponent<?>> loadedComponents;
     private final Collection<Integer> markedForRemoval;
     private boolean stop = false;
@@ -40,7 +41,7 @@ public final class RenderContext {
                           @NotNull Collection<Integer> markedForRemoval,
                           @NotNull RenderCache renderCache,
                           @NotNull Collection<byte[]> bytes,
-                          @NotNull Map<Float, Canvas> canvasses, @NotNull Collection<MenuComponent<?>> loadedComponents) {
+                          @NotNull Map<BigDecimal, Canvas> canvasses, @NotNull Collection<MenuComponent<?>> loadedComponents) {
         this.viewport = viewport;
         this.tree = tree;
         this.markedForRemoval = markedForRemoval;
@@ -65,7 +66,7 @@ public final class RenderContext {
             canvasses, loadedComponents);
     }
 
-    public @NotNull RenderContext withStart(@Nullable Map<Float, Canvas> start) {
+    public @NotNull RenderContext withStart(@Nullable Map<BigDecimal, Canvas> start) {
         if (start != null) canvasses.putAll(start);
         return this;
     }
@@ -114,7 +115,7 @@ public final class RenderContext {
         return tree;
     }
 
-    public @NotNull Map<Float, Canvas> start() {
+    public @NotNull Map<BigDecimal, Canvas> start() {
         return canvasses;
     }
 
