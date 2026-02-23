@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import team.unnamed.creative.ResourcePack;
 import team.unnamed.creative.font.BitMapFontProvider;
 import team.unnamed.creative.font.Font;
+import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackReader;
 import team.unnamed.creative.texture.Texture;
 
 import java.io.ByteArrayInputStream;
@@ -36,8 +37,7 @@ public class ResourcePackDownloader {
             return;
         }
         Path unzipped = ZipHelper.unzip(CACHE);
-        //fuck this shit man
-        ResourcePack pack = null;// MinecraftResourcePackReader.minecraft().readFromDirectory(unzipped.toFile());
+        ResourcePack pack = MinecraftResourcePackReader.minecraft().readFromDirectory(unzipped.toFile());
         for (Font font : pack.fonts()) {
             Key fontFile = font.key();
             Identifier identifier = Identifier.of(fontFile.namespace(), fontFile.value());

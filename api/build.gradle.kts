@@ -1,6 +1,6 @@
 plugins {
     java
-    `maven-publish`
+    id("sunscreen-publish")
 }
 
 repositories {

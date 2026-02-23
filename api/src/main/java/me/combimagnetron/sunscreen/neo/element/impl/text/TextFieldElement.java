@@ -2,6 +2,7 @@ package me.combimagnetron.sunscreen.neo.element.impl.text;
 
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.cursor.CursorStyle;
 import me.combimagnetron.sunscreen.neo.element.impl.TextElement;
 import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
@@ -37,10 +38,14 @@ public class TextFieldElement extends TextElement<TextFieldElement> {
         Vec2i cursor = inputContext.position();
         boolean hover = HoverHelper.in(this, cursor);
         if (!hover) return;
-        if (!inputContext.leftPressed()) return;
+        if (!inputContext.leftPressed()) {
+            inputHandler().cursor(CursorStyle.pointer());
+            return;
+        }
         TextInputContext textInputContext = context();
         if (textInputContext.active()) return;
         inputHandler().anvil();
+        inputHandler().cursor(CursorStyle.textCaret());
     }
 
     @Override

@@ -42,7 +42,6 @@ public class ProtocolListener implements PacketListener {
             case PacketType.Play.Client.PLAYER_ROTATION -> handleRotation(new WrapperPlayClientPlayerRotation(packetReceiveEvent), user);
             case PacketType.Play.Client.INTERACT_ENTITY -> handleInteractEntity(packetReceiveEvent, user);
             case PacketType.Play.Client.PLAYER_INPUT -> handleSneak(new WrapperPlayClientPlayerInput(packetReceiveEvent), user);
-            case PacketType.Play.Client.ANIMATION -> handleAnimation(new WrapperPlayClientAnimation(packetReceiveEvent), user);
             case PacketType.Play.Client.PLAYER_DIGGING -> handleDigging(new WrapperPlayClientPlayerDigging(packetReceiveEvent), user);
             case PacketType.Play.Client.NAME_ITEM -> handleNameItem(new WrapperPlayClientNameItem(packetReceiveEvent), user);
             default -> {}
@@ -84,24 +83,12 @@ public class ProtocolListener implements PacketListener {
         final InputHandler inputHandler = session.menu().inputHandler();
         final String input = wrapperPlayClientNameItem.getItemName();
         if (input.length() == 50) {
-            System.out.println("get that man a true");
             inputHandler.peek(TextInputContext.class, old -> old.append(input), user);
             PlatformProtocolIntermediate protocolIntermediate = SunscreenLibrary.library().intermediate();
             protocolIntermediate.openEmptyAnvil(user);
             return;
         }
         inputHandler.peek(TextInputContext.class, old -> old.withStream(input), user);
-    }
-
-
-    private void handleAnimation(WrapperPlayClientAnimation wrapperPlayClientAnimation, SunscreenUser<?> user) {
-        final Session session = user.session();
-        if (session == null) return;
-        final InputHandler inputHandler = session.menu().inputHandler();
-        //inputHandler.peek(MouseInputContext.class, old -> old.withLeftPressed(true), user);
-//        Scheduler.delayTick(() -> {
-//            inputHandler.peek(MouseInputContext.class, old -> old.withLeftPressed(false), user);
-//        });
     }
 
     private void handleDigging(WrapperPlayClientPlayerDigging wrapperPlayClientPlayerDigging, SunscreenUser<?> user) {

@@ -14,6 +14,7 @@ configurations.all {
 
 plugins {
     application
+    id("sunscreen-publish")
 }
 
 application {
