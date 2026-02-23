@@ -8,6 +8,7 @@ import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.property.Position;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.util.FileProvider;
 import me.combimagnetron.sunscreen.util.helper.ColorHelper;
 import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
 import net.kyori.adventure.text.Component;
@@ -66,6 +67,10 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static @NotNull Canvas resource(@NotNull String string) {
+        return file(FileProvider.resource().find(string).toPath());
     }
 
     public static @NotNull Canvas empty(@NotNull Vec2i size) {

@@ -39,14 +39,12 @@ public class TestMenuTemplate implements MenuTemplate {
                     "sunscreen",
                     "test_menu/theme/test")
             ).decorator(
-                ThemeDecorator.stateNineSlice(
-                    ButtonElement.class,
-                    Map.of(
-                        GenericInteractableModernElement.ElementPhase.DEFAULT, NineSlice.nineSlice(Canvas.file(FileProvider.resource().find("default.png").toPath())),
-                        GenericInteractableModernElement.ElementPhase.HOVER, NineSlice.nineSlice(Canvas.file(FileProvider.resource().find("hovered.png").toPath())),
-                        GenericInteractableModernElement.ElementPhase.CLICK, NineSlice.nineSlice(Canvas.file(FileProvider.resource().find("clicked.png").toPath()))
-                    )
+                ThemeDecorator.stated(
+                    ButtonElement.class
                 )
+                    .standard(Canvas.resource("default.png"))
+                    .hovered(Canvas.resource("hovered.png"))
+                    .clicked(Canvas.resource("clicked.png"))
             ).decorator(
                 ThemeDecorator.nineSlice(
                     TextFieldElement.class,
@@ -61,7 +59,7 @@ public class TestMenuTemplate implements MenuTemplate {
                     "sunscreen",
                     "test_menu/element/test_image"
                 ),
-                Canvas.empty(Vec2i.of(100, 100)).fill(Position.nil(), Size.fixed(Vec2i.of(100, 100)), Color.of(54, 197, 244))
+                Canvas.empty(Vec2i.of(100, 100)).fill(Position.nil(), Size.fixed(Vec2i.of(100, 100)), Color.of(107, 3, 244))
             ).position(Position.fixed(Vec2i.of(0, 0)))
         ).element(
             Elements.button(
@@ -69,7 +67,8 @@ public class TestMenuTemplate implements MenuTemplate {
                     "sunscreen",
                     "test_menu/element/button"
                 )
-            ).position(Position.fixed(Vec2i.of(450, 200))).size(Size.fixed(Vec2i.of(100, 20)))
+            ).listen().mouse(event -> SunscreenLibrary.library().logger().debug(event.context().position().toString())).back()
+                .position(Position.fixed(Vec2i.of(450, 200))).size(Size.fixed(Vec2i.of(100, 20)))
         ).element(
             Elements.shape(
                 Identifier.of(

@@ -12,6 +12,7 @@ import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,6 +29,10 @@ public sealed interface ThemeDecorator<E extends ElementLike<E>> extends Rendera
 
     static <E extends ElementLike<E>> @NotNull StateNineSliceThemeDecorator<E> stateNineSlice(@NotNull Class<E> target, @NotNull Map<GenericInteractableModernElement.ElementPhase, NineSlice> phases) {
         return new StateNineSliceThemeDecorator<>(target, phases);
+    }
+
+    static <E extends ElementLike<E>> @NotNull StateNineSliceThemeDecorator<E> stated(@NotNull Class<E> target) {
+        return new StateNineSliceThemeDecorator<>(target, new HashMap<>());
     }
 
     record NineSliceThemeDecorator<E extends ElementLike<E>>(@NotNull Class<E> target, @NotNull NineSlice nineSlice) implements ThemeDecorator<E> {
@@ -53,6 +58,46 @@ public sealed interface ThemeDecorator<E extends ElementLike<E>> extends Rendera
         @Override
         public @NotNull Canvas render(@NotNull Size property, @Nullable RenderContext context) {
             return render(property, context, GenericInteractableModernElement.ElementPhase.DEFAULT);
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> standard(@NotNull Canvas canvas) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.DEFAULT, NineSlice.nineSlice(canvas));
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> clicked(@NotNull Canvas canvas) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.CLICK, NineSlice.nineSlice(canvas));
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> hovered(@NotNull Canvas canvas) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.HOVER, NineSlice.nineSlice(canvas));
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> standard(@NotNull NineSlice slice) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.DEFAULT, slice);
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> clicked(@NotNull NineSlice slice) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.CLICK, slice);
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> hovered(@NotNull NineSlice slice) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.HOVER, slice);
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> state(@NotNull GenericInteractableModernElement.ElementPhase phase, @NotNull Canvas canvas) {
+            nineSlices.put(phase, NineSlice.nineSlice(canvas));
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator<E> state(@NotNull GenericInteractableModernElement.ElementPhase phase, @NotNull NineSlice slice) {
+            nineSlices.put(phase, slice);
+            return this;
         }
 
     }
