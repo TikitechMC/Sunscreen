@@ -59,7 +59,7 @@ public class TestModernTemplate implements MenuTemplate {
         root.element(
                 Layout.flow(
                         Identifier.of("test_modern", "layout/test_flex"),
-                        Selector.filtered(Filter.identifiable(Identifier.Namespace.of("test_modern"))),
+                        //Selector.filtered(Filter.identifiable(Identifier.Namespace.of("test_modern"))),
                         Elements.image(Identifier.of("test_image"), Canvas.empty(Vec2i.of(100, 200))),
                         Elements.button(Identifier.of("test_button")).listen().mouse(event -> event.context().leftPressed()).back(),
                         Elements.textBox(Identifier.split("test:textbox"))

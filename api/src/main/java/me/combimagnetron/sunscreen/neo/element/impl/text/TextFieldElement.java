@@ -55,7 +55,7 @@ public class TextFieldElement extends TextElement<TextFieldElement> {
         final String input = textInputContext.stream().value();
         ThemeDecorator<?> decorator = context.theme().find(this.getClass());
         Canvas canvas = decorator.render(size(), context);
-        canvas.text(Text.basic(input).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(2,2));
+        canvas.text(Text.basic(input).font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(2,2));
         return canvas;
     }
 

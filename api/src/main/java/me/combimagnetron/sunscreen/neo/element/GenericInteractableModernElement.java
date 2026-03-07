@@ -12,7 +12,6 @@ import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.util.helper.HoverHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 public abstract class GenericInteractableModernElement<E extends ModernElement<E, G>, G extends GraphicLike<G>, R extends ListenerReferences<E, R>> extends GenericModernElement<E, G> implements Interactable<E, R> {
     private InputHandler inputHandler;

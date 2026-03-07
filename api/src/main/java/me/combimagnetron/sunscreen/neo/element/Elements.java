@@ -1,13 +1,12 @@
 package me.combimagnetron.sunscreen.neo.element;
 
 import me.combimagnetron.passport.logic.state.State;
-import me.combimagnetron.sunscreen.neo.element.impl.ButtonElement;
-import me.combimagnetron.sunscreen.neo.element.impl.ImageElement;
-import me.combimagnetron.sunscreen.neo.element.impl.LabelElement;
-import me.combimagnetron.sunscreen.neo.element.impl.ShapeElement;
+import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.element.impl.*;
 import me.combimagnetron.sunscreen.neo.element.impl.text.TextBoxElement;
 import me.combimagnetron.sunscreen.neo.element.impl.text.TextEditorElement;
 import me.combimagnetron.sunscreen.neo.element.impl.text.TextFieldElement;
+import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.GraphicLike;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
@@ -15,6 +14,7 @@ import me.combimagnetron.sunscreen.neo.graphic.shape.Shape;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface Elements {
 
@@ -68,6 +68,22 @@ public interface Elements {
 
     static @NotNull ButtonElement button(@NotNull Identifier identifier) {
         return new ButtonElement(identifier);
+    }
+
+    static @NotNull ButtonElement button(@NotNull Identifier identifier, @NotNull Text text) {
+        return new ButtonElement(identifier, text, Vec2i.zero());
+    }
+
+    static @NotNull ButtonElement button(@NotNull Identifier identifier, @NotNull Text text, @NotNull Vec2i position) {
+        return new ButtonElement(identifier, text, position);
+    }
+
+    static @NotNull ComparisonElement comparison(@NotNull Identifier identifier, @Nullable Canvas left, @Nullable Canvas right) {
+        return new ComparisonElement(identifier, left, right);
+    }
+
+    static @NotNull ComparisonElement comparison(@NotNull Identifier identifier) {
+        return new ComparisonElement(identifier);
     }
 
 }

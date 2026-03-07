@@ -25,7 +25,7 @@ public class InputHandler {
     protected InputHandler(ActiveMenu activeMenu) {
         this.activeMenu = activeMenu;
         inputContextMap.put(MouseInputContext.class, new MouseInputContext(false, false, false, Vec2i.zero()));
-        inputContextMap.put(ScrollInputContext.class, new ScrollInputContext(false, 0f));
+        inputContextMap.put(ScrollInputContext.class, new ScrollInputContext(false, 0f, 0));
         inputContextMap.put(TextInputContext.class, new TextInputContext(false, State.immutable(""), State.immutable("")));
     }
 

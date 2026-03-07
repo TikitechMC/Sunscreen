@@ -10,6 +10,7 @@ import me.combimagnetron.sunscreen.neo.theme.color.ColorScheme;
 import me.combimagnetron.sunscreen.neo.theme.decorator.ThemeDecorator;
 import me.combimagnetron.sunscreen.util.IdentifierHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,8 @@ public sealed interface ModernTheme extends MenuComponent<ModernTheme>, Identifi
     <E extends ModernElement<E, Canvas>, D extends ThemeDecorator<E>> @NotNull ThemeDecorator<E> find(@NotNull Class<@NotNull ? extends E> clazz);
 
     @NotNull ModernTheme colorScheme(@NotNull ColorScheme colorScheme);
+
+    @Nullable ColorScheme colorScheme();
 
     static @NotNull ModernTheme theme(@NotNull Identifier identifier) {
         return new SimpleModernTheme(identifier);
@@ -58,6 +61,11 @@ public sealed interface ModernTheme extends MenuComponent<ModernTheme>, Identifi
         public @NotNull ModernTheme colorScheme(@NotNull ColorScheme colorScheme) {
             this.colorScheme = colorScheme;
             return this;
+        }
+
+        @Override
+        public @Nullable ColorScheme colorScheme() {
+            return colorScheme;
         }
 
         @Override

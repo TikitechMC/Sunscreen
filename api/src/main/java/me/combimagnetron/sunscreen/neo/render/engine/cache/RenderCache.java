@@ -100,4 +100,8 @@ public class RenderCache {
         return idToChunkMap.get((int) id);
     }
 
+    public record CachedChunkMetadata(@NotNull BigDecimal scale, float zIndex) {
+
+    }
+
 }

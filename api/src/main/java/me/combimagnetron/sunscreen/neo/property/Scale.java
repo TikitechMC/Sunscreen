@@ -66,11 +66,6 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
 
     }
 
-    @Override
-    public void add(FloatRelativeBuilder<Scale> scaleFloatRelativeBuilder, Void unused) {
-
-    }
-
     public @NotNull BigDecimal rounded() {
         return new BigDecimal(Float.toString(value)).setScale(3, RoundingMode.HALF_UP);
     }

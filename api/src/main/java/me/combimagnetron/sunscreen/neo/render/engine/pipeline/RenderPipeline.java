@@ -21,12 +21,13 @@ public final class RenderPipeline {
     public static final ExecutorService WORK_EXECUTOR = Executors.newWorkStealingPool();
     private static final int PHASE_AMOUNTS = 4;
     private static final long TARGET_FPS = 60 * PHASE_AMOUNTS; //4 states that each need their own cycle, very nasty hack
-    private static final long PERIOD_MS = 1000 / TARGET_FPS;
+    public static final long PERIOD_MS = 1000 / TARGET_FPS;
 
     private final AtomicLong tick = new AtomicLong();
     private final UUID menuUuid;
     private final ScheduledFuture<?> scheduledFuture;
     private final Map<Identifier, ElementLike<?>> queuedElements = new LinkedHashMap<>();
+    private final Collection<Identifier> remove = new ConcurrentLinkedDeque<>();
     private final SunscreenUser<?> user;
     private volatile RenderContext context;
     private RenderPhase<?> state;
@@ -60,6 +61,10 @@ public final class RenderPipeline {
             context = pair.right();
             Dispatcher.dispatcher().post(new MenuTickEndEvent(menuUuid, currentTick));
             if (state != null && state.nextType() == RenderPhase.Process.class) {
+                for (Identifier identifier : remove) {
+                    queuedElements.remove(identifier);
+                    remove.remove(identifier);
+                }
                 state = new RenderPhase.Process(queuedElements.values(), user);
             }
             if (context.stop()) stop();
@@ -74,6 +79,10 @@ public final class RenderPipeline {
         for (ElementLike<?> elementLike : elementLikes) {
             queuedElements.put(elementLike.identifier(), elementLike);
         }
+    }
+
+    public void submitForRemoval(@NotNull Identifier identifier) {
+        remove.add(identifier);
     }
 
     public @Nullable ElementLike<?> element(@NotNull Identifier identifier) {

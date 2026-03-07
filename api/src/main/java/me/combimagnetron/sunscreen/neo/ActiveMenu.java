@@ -11,6 +11,7 @@ import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.context.InputContext;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.input.context.ScrollInputContext;
+import me.combimagnetron.sunscreen.neo.layout.Layout;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponent;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponentLoaderContext;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
@@ -51,6 +52,9 @@ public class ActiveMenu implements IdentifierHolder {
             if (elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement) {
                 interactableModernElement.inputHandler(inputHandler);
             }
+            if (elementLike instanceof Layout<?> layout) {
+                layout.inputHandler(inputHandler);
+            }
         }
         renderPipeline = RenderThreadPoolHandler.start(user, menuRoot, loadedComponents.values());
         Location location = user.eyeLocation();
@@ -90,6 +94,11 @@ public class ActiveMenu implements IdentifierHolder {
 
     public @Nullable ElementLike<?> element(@NotNull Identifier identifier) {
         return renderPipeline.element(identifier);
+    }
+
+    public @NotNull ActiveMenu remove(@NotNull Identifier identifier) {
+        renderPipeline.submitForRemoval(identifier);
+        return this;
     }
 
     public @NotNull ActiveMenu cursor(@NotNull CursorStyle style) {

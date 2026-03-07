@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class Padding extends RelativeMeasure.Vec4iRelativeMeasureGroup<Padding> implements Property<Vec4i, Padding> {
     private static final PropertyHandler<Padding> PROPERTY_HANDLER = (element, context, padding) -> null;
-    private final Map<RelativeMeasure.Axis4d, Vec4iRelativeBuilder<Padding>> axisMap = new LinkedHashMap<>();
+    private final Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<Padding>> axisMap = new LinkedHashMap<>();
 
     public Padding(@NotNull Vec4i Vec4i) {
         super(Vec4i);

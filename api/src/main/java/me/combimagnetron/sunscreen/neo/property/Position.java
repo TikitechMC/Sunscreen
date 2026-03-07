@@ -13,7 +13,7 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
     private static final PropertyHandler<Position> PROPERTY_HANDLER = (element, context, position) -> null;
     private static final Position ZERO = Position.fixed(Vec2i.zero());
 
-    private final Map<RelativeMeasure.Axis2d, Vec2iRelativeBuilder<Position>> axisMap = new LinkedHashMap<>();
+    private final Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>> axisMap = new LinkedHashMap<>();
 
     public static Position nil() {
         return ZERO;
@@ -27,8 +27,9 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
         super(supplier);
     }
 
+    @SuppressWarnings("unchecked")
     public Position(@NotNull RelativeMeasure.Vec2iRelativeMeasureGroup<?> measureGroup) {
-        //axisMap.putAll((Map<? extends RelativeMeasure.Axis2d, Vec2iRelativeBuilder<Position>>) measureGroup.axisBuilderMap());
+        axisMap.putAll((Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>>) (Map<?, ?>) measureGroup.axisBuilderMap());
     }
 
     public static <C> @NotNull Position relative(RelativeMeasure.Vec2iRelativeMeasureGroup<C> measureGroup) {
@@ -55,7 +56,10 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
 
     @Override
     public void finish(@NotNull Viewport viewport) {
-
+        Vec2i view = viewport.currentView();
+        int x = axisMap.get(RelativeMeasure.Axis2d.X).finish(view.x());
+        int y = axisMap.get(RelativeMeasure.Axis2d.Y).finish(view.y());
+        vec2i = Vec2i.of(x, y);
     }
 
 

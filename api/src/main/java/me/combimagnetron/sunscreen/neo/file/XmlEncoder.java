@@ -309,12 +309,12 @@ public final class XmlEncoder {
 
     //TODO simplify all of the relative stuff, this cannot pass.
     private void encodeVec2iAxis(@NotNull Document doc, @NotNull Element parent,
-            @NotNull RelativeMeasure.Vec2iRelativeMeasureGroup.Vec2iRelativeBuilder<?> builder) {
+            @NotNull RelativeMeasure.RelativeBuilder<?> builder) {
         appendTextElement(doc, parent, "pixel", "0");
     }
 
     private void encodeVec4iAxis(@NotNull Document doc, @NotNull Element parent,
-            @NotNull RelativeMeasure.Vec4iRelativeMeasureGroup.Vec4iRelativeBuilder<?> builder) {
+            @NotNull RelativeMeasure.RelativeBuilder<?> builder) {
         appendTextElement(doc, parent, "pixel", "0");
     }
 

@@ -11,7 +11,11 @@ import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.GraphicLike;
+import me.combimagnetron.sunscreen.neo.layout.Layout;
+import me.combimagnetron.sunscreen.neo.property.Property;
+import me.combimagnetron.sunscreen.neo.property.RelativeMeasure;
 import me.combimagnetron.sunscreen.neo.property.Size;
+import me.combimagnetron.sunscreen.neo.property.Visibility;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.neo.element.ElementContainer;
@@ -46,7 +50,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Process implements RenderPhase<Draw> {
-        private final Map<BigDecimal, List<ElementLike<?>>> elementsByScale = new HashMap<>();
+        private final Map<BigDecimal, List<ModernElement<?, ?>>> elementsByScale = new HashMap<>();
         private final List<ElementLike<?>> elementList = new LinkedList<>();
         private final SunscreenUser<?> user;
         private final Viewport viewport;
@@ -56,9 +60,17 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             this.viewport = user.screenInfo().viewport();
             this.user = user;
             for (ElementLike<?> unfilteredElement : unfilteredElements) {
-                BigDecimal scale = unfilteredElement.scale().rounded();
-                List<ElementLike<?>> list = elementsByScale.computeIfAbsent(scale, (_) -> new ArrayList<>());
-                list.add(unfilteredElement);
+                if (!(unfilteredElement instanceof ModernElement<?,?> modernElement)) continue; // add way to retreive it somehow still
+                BigDecimal scale = modernElement.scale().rounded();
+                Visibility visibility = modernElement.visibility();
+                if (visibility.hide()) continue;
+                for (Property<?, ?> property : modernElement.properties()) {
+                    if (!(property instanceof RelativeMeasure.RelativeMeasureGroup<?> group)) continue;
+                    if (group.value() != null) continue;
+                    group.finish(user.screenInfo().viewport());
+                }
+                List<ModernElement<?, ?>> list = elementsByScale.computeIfAbsent(scale, (_) -> new ArrayList<>());
+                list.add(modernElement);
             }
         }
 
@@ -97,11 +109,11 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
 
     class Draw implements RenderPhase<Encode> {
         private final Map<BigDecimal, Canvas> canvasses = new HashMap<>();
-        private final Map<BigDecimal, List<ElementLike<?>>> scaleSeparated;
+        private final Map<BigDecimal, List<ModernElement<?, ?>>> scaleSeparated;
         private final SunscreenUser<?> user;
         private final Viewport viewport;
 
-        public Draw(Map<BigDecimal, List<ElementLike<?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
+        public Draw(Map<BigDecimal, List<ModernElement<?, ?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
             this.viewport = viewport;
             this.scaleSeparated = scaleSeparated;
             this.user = user;
@@ -114,12 +126,12 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
 
         @Override
         public @NotNull Pair<Encode, RenderContext> advance(@NonNull RenderContext renderContext) {
-            for (Map.Entry<BigDecimal, List<ElementLike<?>>> entry : scaleSeparated.entrySet()) {
+            for (Map.Entry<BigDecimal, List<ModernElement<?, ?>>> entry : scaleSeparated.entrySet()) {
                 BigDecimal scale = entry.getKey();
                 Vec2i viewportVec = viewport.currentView();
                 Vec2i canvasSize = Vec2i.of((viewportVec.x() + 127) & ~127, (viewportVec.y() + 127) & ~127);
                 canvasses.computeIfAbsent(scale, _ -> Canvas.empty(canvasSize));
-                for (ElementLike<?> elementLike : entry.getValue()) {
+                for (ModernElement<?, ?> elementLike : entry.getValue()) {
                     if (!(elementLike instanceof ModernElement<?, ?> element)) continue;
                     GraphicLike<?> graphics = element.render(Size.fixed(canvasSize), renderContext);
                     Vec2i positionVec = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
@@ -195,7 +207,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         private @NotNull Collection<EncodedRenderChunk> encodeChunks(List<ProcessedRenderChunk> changed, RenderCache cache) {
             return changed.stream().map(chunk -> {
                 try {
-                    byte[] bytes = new MapEncoderTest(chunk).bytes().toByteArray();
+                    byte[] bytes = new MapEncoder(chunk).bytes().toByteArray();
                     EncodedRenderChunk encodedRenderChunk = new EncodedRenderChunk(bytes, chunk.position(), chunk.scale(), chunk.bufferedColorSpace());
                     Integer id = cache.byPosAndScale(chunk.scale(), chunk.position());
                     boolean exists = id != null;

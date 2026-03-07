@@ -1,5 +1,7 @@
 package me.combimagnetron.sunscreen.util;
 
+import me.combimagnetron.sunscreen.neo.render.engine.pipeline.RenderThreadPoolHandler;
+
 import java.util.concurrent.*;
 
 public class Scheduler {
@@ -23,7 +25,7 @@ public class Scheduler {
     }
 
     public static void delay(Runnable code, long delay) {
-        SCHEDULED_EXECUTOR_SERVICE.schedule(code, delay, TimeUnit.MILLISECONDS);
+        RenderThreadPoolHandler.EXECUTOR_SERVICE.schedule(code, delay, TimeUnit.MILLISECONDS);
     }
 
     public static ScheduledFuture<?> repeat(Runnable code, Duration duration) {

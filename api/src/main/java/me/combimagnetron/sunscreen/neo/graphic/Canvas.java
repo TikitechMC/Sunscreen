@@ -40,7 +40,7 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
 
     public static @NotNull Canvas error(@NotNull Size size) {
         Vec2i sizeVec = PropertyHelper.vectorOrThrow(size, Vec2i.class);
-        return null;
+        return Canvas.empty(sizeVec);
     }
 
     public static @NotNull Canvas url(@NotNull String url) {

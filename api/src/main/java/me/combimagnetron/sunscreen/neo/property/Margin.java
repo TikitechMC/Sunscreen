@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Margin extends RelativeMeasure.Vec4iRelativeMeasureGroup<Margin> implements Property<Vec4i, Margin> {
     private static final PropertyHandler<Margin> PROPERTY_HANDLER = (element, context, margin) -> null;
-    private final Map<RelativeMeasure.Axis4d, Vec4iRelativeBuilder<@NotNull Margin>> axisMap = new LinkedHashMap<>();
+    private final Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<@NotNull Margin>> axisMap = new LinkedHashMap<>();
 
     public Margin(@NotNull Vec4i Vec4i) {
         super(Vec4i);

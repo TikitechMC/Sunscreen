@@ -44,6 +44,10 @@ public interface PropertyContainer<R> {
         return propOr(Scale.class, Scale.none());
     }
 
+    default @NotNull Visibility visibility() {
+        return propOr(Visibility.class, Visibility.visible());
+    }
+
     default @NotNull R size(@NotNull Size size) {
         return property(size);
     }
@@ -62,6 +66,10 @@ public interface PropertyContainer<R> {
 
     default @NotNull R scale(@NotNull Scale scale) {
         return property(scale);
+    }
+
+    default @NotNull R visibility(@NotNull Visibility visibility) {
+        return property(visibility);
     }
 
 }

@@ -9,16 +9,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
-public interface ElementContainer<E extends ElementLike<E>> extends ElementLike<E>, Renderable<Size, Canvas> {
+public interface ElementContainer<E extends ModernElement<E, Canvas>> extends ModernElement<E, Canvas> {
 
-    @NotNull Collection<ElementLike<?>> children();
+    @NotNull Collection<ModernElement<?, Canvas>> children();
 
-    <L extends ElementLike<L>> @NotNull ElementContainer<@NotNull E> add(@NotNull L elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> add(@NotNull L elementLike);
 
-    <L extends ElementLike<L>> @NotNull ElementContainer<@NotNull E> add(@NotNull Iterable<@NotNull L> elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> add(@NotNull Iterable<@NotNull L> elementLike);
 
-    <L extends ElementLike<L>> @NotNull ElementContainer<@NotNull E> remove(@NotNull L elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> remove(@NotNull L elementLike);
 
-    @NotNull ElementContainer<@NotNull E> remove(@Nullable Identifier identifier);
+    @NotNull ElementContainer<@NotNull E> remove(@NotNull Identifier identifier);
 
 }

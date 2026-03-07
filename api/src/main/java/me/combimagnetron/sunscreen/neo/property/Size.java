@@ -10,14 +10,15 @@ import java.util.Map;
 
 public class Size extends RelativeMeasure.Vec2iRelativeMeasureGroup<Size> implements Property<Vec2i, Size> {
     private static final PropertyHandler<Size> PROPERTY_HANDLER = (element, context, size) -> null;
-    private final Map<RelativeMeasure.Axis2d, RelativeMeasure.Vec2iRelativeMeasureGroup.Vec2iRelativeBuilder<Size>> axisMap = new LinkedHashMap<>();
+    private final Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>> axisMap = new LinkedHashMap<>();
 
-    public Size(@NotNull Vec2i vec2i) {
+    protected Size(@NotNull Vec2i vec2i) {
         super(vec2i);
     }
 
-    public Size(@NotNull RelativeMeasure.Vec2iRelativeMeasureGroup<?> measureGroup) {
-        //axisMap.putAll((Map<? extends RelativeMeasure.Axis2d, ? extends Vec2iRelativeBuilder<Size>>) measureGroup.axisBuilderMap());
+    @SuppressWarnings("unchecked")
+    protected Size(@NotNull RelativeMeasure.Vec2iRelativeMeasureGroup<?> measureGroup) {
+        axisMap.putAll((Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>>) (Map<?, ?>) measureGroup.axisBuilderMap());
     }
 
     public static <C> @NotNull Size relative(RelativeMeasure.Vec2iRelativeMeasureGroup<C> measureGroup) {
@@ -44,7 +45,10 @@ public class Size extends RelativeMeasure.Vec2iRelativeMeasureGroup<Size> implem
 
     @Override
     public void finish(@NotNull Viewport viewport) {
-
+        Vec2i view = viewport.currentView();
+        int x = axisMap.get(RelativeMeasure.Axis2d.X).finish(view.x());
+        int y = axisMap.get(RelativeMeasure.Axis2d.Y).finish(view.y());
+        vec2i = Vec2i.of(x, y);
     }
 
     public static class Fit extends Size implements FitToContent<Size> {
