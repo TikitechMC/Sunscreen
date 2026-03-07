@@ -122,6 +122,10 @@ public final class BufferedColorSpace {
         buffer[index] = ColorHelper.mix(currentColor, color);
     }
 
+    public void colorDirectInteger(int x, int y, int color) {
+        colorDirectAnalog(pixelIndex(x, y, size().x()), color);
+    }
+
     public void color(int x, int y, @NotNull ColorLike colorLike) {
         colorDirect(pixelIndex(x, y, size.x()), colorLike);
     }
