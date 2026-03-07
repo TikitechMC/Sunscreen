@@ -3,6 +3,7 @@ package me.combimagnetron.sunscreen.neo.editor.toolbar;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.sunscreen.neo.editor.widget.EditorWidget;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
+import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.property.Property;
 import me.combimagnetron.sunscreen.neo.property.Size;
@@ -27,7 +28,7 @@ public class Toolbar extends EditorWidget {
     }
 
     @Override
-    public @NotNull <T, C> ElementLike<EditorWidget> property(@NotNull Property<@NotNull T, @NotNull C> property) {
+    public @NonNull <T, C> EditorWidget property(@NotNull Property<T, C> property) {
         return null;
     }
 
@@ -37,7 +38,7 @@ public class Toolbar extends EditorWidget {
     }
 
     @Override
-    public @NotNull Collection<ElementLike<?>> children() {
+    public @NotNull Collection<ModernElement<?, Canvas>> children() {
         return List.of();
     }
 
