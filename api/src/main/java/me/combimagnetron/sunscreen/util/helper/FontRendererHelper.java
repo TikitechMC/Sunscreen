@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class FontRendererHelper {
-    private final static String characterRange = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    private final static String characterRange = " _:/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+
+    private FontRendererHelper() {}
 
     public static @NotNull Char2ObjectMap<Canvas> font(@NotNull Path file, float fontSize) {
         final Char2ObjectMap<Canvas> charToCanvasMap = new Char2ObjectArrayMap<>();

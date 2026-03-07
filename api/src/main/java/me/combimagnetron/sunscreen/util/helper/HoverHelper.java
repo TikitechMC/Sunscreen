@@ -9,6 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class HoverHelper {
 
+    private HoverHelper() {}
+
     public static <E extends ElementLike<E>> boolean in(@NotNull ElementLike<E> elementLike, @NotNull Vec2i cursor) {
         final Position position = elementLike.propOrThrow(Position.class);
         final Size size = elementLike.propOrThrow(Size.class);

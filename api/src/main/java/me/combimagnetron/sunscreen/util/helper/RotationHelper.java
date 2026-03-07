@@ -11,6 +11,8 @@ public class RotationHelper {
     private static final float HUH = (float) (355.0 / 113.0) - 5.829e-8f;
     private static final float CURSOR_SIZE = 1.0f / (float) Math.pow(2.0, 1);
 
+    private RotationHelper() {}
+
     public static @NotNull Vec2i convert(float yawDegrees, float pitchDegrees, @NotNull ScreenInfo screenSize) {
         final Viewport viewport = screenSize.viewport();
         final Vec2i viewportVec = viewport.currentView();

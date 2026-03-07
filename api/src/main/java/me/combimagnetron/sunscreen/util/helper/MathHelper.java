@@ -2,6 +2,8 @@ package me.combimagnetron.sunscreen.util.helper;
 
 public class MathHelper {
 
+    private MathHelper() {}
+
     public static boolean isPowerOfTwo(float x) {
         if (x <= 0) {
             return false;

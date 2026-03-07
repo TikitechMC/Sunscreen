@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 
 public class ColorHelper {
 
+    private ColorHelper() {}
+
     public static @NotNull ColorLike mix(@NotNull ColorLike... colors) {
         int[] intColors = new int[colors.length];
         for (int i = 0; i < colors.length; i++) {

@@ -13,6 +13,8 @@ public class IdentifierHelper {
             "element", new Type[]{Type.PAGE, Type.THEME}
     );
 
+    private IdentifierHelper() {}
+
     public static boolean conforms(@NotNull Identifier identifier, @NotNull Type type) {
         final String identifierString = identifier.string();
         return !(BLOCKED_NAMES_TO_TYPE.entrySet().stream()
