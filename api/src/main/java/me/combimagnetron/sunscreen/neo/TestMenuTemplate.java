@@ -3,24 +3,23 @@ package me.combimagnetron.sunscreen.neo;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
-import me.combimagnetron.sunscreen.neo.editor.element.PaddingMarginElement;
 import me.combimagnetron.sunscreen.neo.element.Elements;
-import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
+import me.combimagnetron.sunscreen.neo.element.impl.ComparisonElement;
+import me.combimagnetron.sunscreen.neo.element.impl.SliderElement;
 import me.combimagnetron.sunscreen.neo.element.impl.ButtonElement;
 import me.combimagnetron.sunscreen.neo.element.impl.text.TextFieldElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.NineSlice;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
-import me.combimagnetron.sunscreen.neo.graphic.shape.Shape;
 import me.combimagnetron.sunscreen.neo.property.Position;
+import me.combimagnetron.sunscreen.neo.property.RelativeMeasure;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
+import me.combimagnetron.sunscreen.neo.theme.color.ColorSchemes;
 import me.combimagnetron.sunscreen.neo.theme.decorator.ThemeDecorator;
-import me.combimagnetron.sunscreen.util.FileProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
-import java.util.Map;
 
 public class TestMenuTemplate implements MenuTemplate {
     private static final Identifier IDENTIFIER = Identifier.of("sunscreen", "test_menu");
@@ -38,6 +37,8 @@ public class TestMenuTemplate implements MenuTemplate {
                 Identifier.of(
                     "sunscreen",
                     "test_menu/theme/test")
+            ).colorScheme(
+                ColorSchemes.EDITOR
             ).decorator(
                 ThemeDecorator.stated(
                     ButtonElement.class
@@ -53,7 +54,10 @@ public class TestMenuTemplate implements MenuTemplate {
             )
         );
         //root.element(Elements.image(Identifier.of("woopsie_fuck"), Canvas.url("https://i.imgur.com/eIacYAm.png")).position(Position.nil()).scale(Scale.fixed(1.56f))
-        root.element(
+        root
+            /*.element(
+            new MenuPreviewElement(Identifier.of("wow")).position(Position.fixed(Vec2i.of(139, 15))).size(Size.relative(RelativeMeasure.vec2i().x().percentage(60).back().y().percentage(45).back()))
+        ).element(
             Elements.image(
                 Identifier.of(
                     "sunscreen",
@@ -87,11 +91,13 @@ public class TestMenuTemplate implements MenuTemplate {
                 Canvas.url("https://i.imgur.com/YNMmJRM.png")
             ).position(Position.fixed(Vec2i.of(200, 300)))//.position(Position.relative(RelativeMeasure.vec2i().x().percentage(50).back().y().percentage(50).back()))
         ).element(
-            new PaddingMarginElement(Identifier.of("hello")).position(Position.fixed(Vec2i.of(150, 160)))
+            new PaddingMarginElement(Identifier.of("hello")).position(Position.fixed(Vec2i.of(660, 41)))
         ).element(
             Elements.textField(
                 Identifier.of("test")
             ).position(Position.fixed(Vec2i.of(20, 300))).size(Size.fixed(Vec2i.of(700, 10)))
+        )*/.element(
+            Elements.comparison(Identifier.of("test"), Canvas.resource("normal.png"), Canvas.resource("inverted.png")).size(Size.fixed(Vec2i.of(200, 168))).position(Position.relative(RelativeMeasure.vec2i().x().percentage(50).pixel(-100).back().y().percentage(50).pixel(-84).back()))
         );
     }
 
