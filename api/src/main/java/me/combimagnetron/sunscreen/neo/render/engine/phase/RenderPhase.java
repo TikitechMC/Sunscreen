@@ -202,7 +202,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         private @NotNull Collection<EncodedRenderChunk> encodeChunks(List<ProcessedRenderChunk> changed, RenderCache cache) {
             return changed.stream().map(chunk -> {
                 try {
-                    byte[] bytes = MapEncoderFactory.encode(chunk).toByteArray();
+                    byte[] bytes = MapEncoderFactory.encode(chunk);
                     EncodedRenderChunk encodedRenderChunk = new EncodedRenderChunk(bytes, chunk.position(), chunk.scale(), chunk.bufferedColorSpace());
                     Integer id = cache.byPosAndScale(chunk.scale(), chunk.position());
                     boolean exists = id != null;
