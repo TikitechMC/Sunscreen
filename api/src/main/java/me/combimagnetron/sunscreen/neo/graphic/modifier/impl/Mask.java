@@ -13,7 +13,6 @@ public record Mask(@NotNull Shape modifier, @NotNull ModifierContext context) im
         modifier.shape().stream().parallel().forEach(i -> {
             Vec2i pos = position(i, modifier.squareSize());
             Vec2i position = modifierContext.propOr(Position.class, Position.nil()).value();
-            if (position == null) return;
             if (i == 0) return;
             current.erase(position.add(pos));
         });

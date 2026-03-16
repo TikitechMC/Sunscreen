@@ -9,7 +9,7 @@ public interface ColorSchemes {
     ColorScheme EDITOR = ColorScheme.scheme(
             ColorScheme.ColorMode.DARK,
             Color.hex("#858585"),
-            Color.hex("#131313"),
+            Color.hex("#0D0D0D"),
             Color.hex("#1B1B1B")
     )
             .color(ColorKey.colorKey("#highlight"), Color.hex("#FFFFFF"))

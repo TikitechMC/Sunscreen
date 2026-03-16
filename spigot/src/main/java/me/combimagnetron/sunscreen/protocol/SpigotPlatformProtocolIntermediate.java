@@ -29,6 +29,8 @@ import me.combimagnetron.passport.internal.network.Connection;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
+import me.combimagnetron.sunscreen.neo.render.engine.cache.RenderCache;
+import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import me.combimagnetron.sunscreen.util.Scheduler;
 import net.kyori.adventure.text.Component;
@@ -96,7 +98,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         ItemFrame upper = ItemFrame.frame(loc2Vec3(location), itemStack);
         ItemFrame lower = ItemFrame.frame(loc2Vec3(location), itemStack);
         upper.id(Entity.EntityId.of(mapId));
-        lower.id(Entity.EntityId.of(mapId - 500));
+        lower.id(Entity.EntityId.of(Integer.MIN_VALUE + mapId));
         upper.invisible(true);
         upper.direction(ItemFrame.Direction.UP);
         lower.invisible(true);
@@ -121,7 +123,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         UserProfile profile = new UserProfile(uuid, player.getName(), properties);
         WrapperPlayServerSpawnEntity spawnEntity = new WrapperPlayServerSpawnEntity(-10_000, uuid, EntityTypes.PLAYER, vec32PeLoc(user.position(), user.rotation()), player.getYaw(), 0, com.github.retrooper.packetevents.util.Vector3d.zero());
         WrapperPlayServerPlayerInfoUpdate infoUpdate = new WrapperPlayServerPlayerInfoUpdate(WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER, new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(profile, false, 0, GameMode.CREATIVE, null, null, 0, true));
-        WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.BARRIER));
+        WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.EXPOSED_COPPER_GRATE));
         user.connection().send(new WrapperPlayServerEntityEffect(player.getEntityId(), PotionTypes.INVISIBILITY, 255, -1, ((byte) 0)));
         // todo: fix invis potion
         player.setInvisible(true);
@@ -174,12 +176,19 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         user.connection().send(camera);
         user.connection().send(new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.AIR)));
         user.connection().send(new WrapperPlayServerRemoveEntityEffect(player.getEntityId(), PotionTypes.INVISIBILITY));
+        user.resendInv();
     }
 
     @Override
     public void gameTime(@NotNull SunscreenUser<?> user) {
         WrapperPlayServerTimeUpdate time = new WrapperPlayServerTimeUpdate(-2000, (long) user.worldTime(), false);
         user.connection().send(time);
+    }
+
+    @Override
+    public void bundleDelimiter(@NotNull SunscreenUser<?> user) {
+        WrapperPlayServerBundle bundle = new WrapperPlayServerBundle();
+        user.connection().send(bundle);
     }
 
     @Override

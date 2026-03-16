@@ -14,6 +14,8 @@ import java.util.Enumeration;
 
 public class ZipHelper {
 
+    private ZipHelper() {}
+
     public static @NotNull Path unzip(@NotNull Path file) {
         String destination = file.toString().replace(".zip", "");
         try {

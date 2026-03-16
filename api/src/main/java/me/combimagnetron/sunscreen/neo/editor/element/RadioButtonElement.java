@@ -29,7 +29,7 @@ public class RadioButtonElement extends GenericInteractableModernElement<RadioBu
     public @NonNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
         Vec2i sizeVec = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
         if (context == null) return Canvas.error(size());
-        ThemeDecorator<?> decorator = context.theme().find(this.getClass());
+        ThemeDecorator decorator = context.theme().find(this.getClass());
 
         return null;
     }

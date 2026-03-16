@@ -12,7 +12,7 @@ public interface ListenerReferences<T, S extends ListenerReferences<T, S>> {
     T back();
 
     default S mouse(@NotNull Consumer<UserMoveStateChangeEvent> eventConsumer) {
-        EventBus.subscribe(UserMoveStateChangeEvent.class, EventFilter.filter(null, null, null), eventConsumer);
+        EventBus.subscribe(UserMoveStateChangeEvent.class, eventConsumer);
         return (S) this;
     }
 

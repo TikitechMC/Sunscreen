@@ -86,7 +86,7 @@ public class SunscreenLibraryMinestom implements SunscreenLibrary<Object, Player
 
     @Override
     public @NotNull Logger logger() {
-        return null;//MinecraftServer.LOGGER;
+        return MinecraftServer.LOGGER;
     }
 
     @Override

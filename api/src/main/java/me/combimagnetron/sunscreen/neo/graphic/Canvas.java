@@ -119,6 +119,11 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
         return this;
     }
 
+    public @NotNull Canvas replace(@NotNull Color target, @NotNull Color replacement) {
+        bufferedColorSpace.replace(target, replacement);
+        return this;
+    }
+
     public @NotNull Canvas shape(@NotNull Shape shape) {
         return shape(shape, Color.of(255, 255, 255));
     }

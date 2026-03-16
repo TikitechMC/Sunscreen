@@ -1,40 +1,42 @@
 package me.combimagnetron.sunscreen.neo.editor.widget;
 
 import me.combimagnetron.passport.util.data.Identifier;
-import me.combimagnetron.sunscreen.neo.element.ElementContainer;
-import me.combimagnetron.sunscreen.neo.element.ElementLike;
+import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
+import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
+import me.combimagnetron.sunscreen.neo.property.Size;
+import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-public abstract class EditorWidget implements ElementContainer<EditorWidget>, ModernElement<EditorWidget, Canvas> {
-    private final Map<Identifier, ElementLike<?>> elements = new HashMap<>();
+public class EditorWidget extends GenericInteractableModernElement<EditorWidget, Canvas, EditorWidget.EditorWidgetListenerReferences> {
+    private final EditorWidgetListenerReferences references = new EditorWidgetListenerReferences(this);
+    private final Set<EditorWidgetTab> tabs = new HashSet<>();
+    private int selected = 0;
+
+    protected EditorWidget(@Nullable Identifier identifier) {
+        super(identifier);
+    }
+
 
     @Override
-    public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull EditorWidget> add(@NotNull L elementLike) {
-        elements.put(elementLike.identifier(), elementLike);
-        return this;
+    public @NonNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
+        return null;
     }
 
     @Override
-    public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull EditorWidget> add(@NotNull Iterable<@NotNull L> elementLikes) {
-        elementLikes.forEach(elementLike -> elements.put(elementLike.identifier(), elementLike));
-        return this;
+    public @NonNull EditorWidgetListenerReferences listen() {
+        return references;
     }
 
-    @Override
-    public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull EditorWidget> remove(@NotNull L elementLike) {
-        return remove(elementLike.identifier());
-    }
+    public record EditorWidgetListenerReferences(@NotNull EditorWidget back) implements ListenerReferences<EditorWidget, EditorWidgetListenerReferences> {
 
-    @Override
-    public @NotNull ElementContainer<@NotNull EditorWidget> remove(@Nullable Identifier identifier) {
-        elements.remove(identifier);
-        return this;
     }
 
 }

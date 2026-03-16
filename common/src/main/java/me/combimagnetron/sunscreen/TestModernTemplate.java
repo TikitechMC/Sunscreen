@@ -25,6 +25,7 @@ import me.combimagnetron.sunscreen.neo.selector.filter.Filter;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
+import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
 import me.combimagnetron.sunscreen.neo.theme.decorator.ThemeDecorator;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +45,7 @@ public class TestModernTemplate implements MenuTemplate {
         root.element(Elements.label(Identifier.of("test_modern", "element/label"), changingText)
         ).theme(
                 ModernTheme.theme(Identifier.of("test_modern", "theme/test_theme"))
-                        .decorator(ThemeDecorator.nineSlice(ButtonElement.class, NineSlice.nineSlice(Canvas.file(Path.of("assets/button_nineslice.png")))))
+                        .decorator(ThemeDecorator.nineSlice(Target.typed(ButtonElement.class), NineSlice.nineSlice(Canvas.file(Path.of("assets/button_nineslice.png")))))
         ).page(
                 Page.page(
                         Identifier.of("test_modern", "page/test_page")

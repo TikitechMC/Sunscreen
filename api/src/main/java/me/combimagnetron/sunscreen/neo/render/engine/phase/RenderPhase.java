@@ -1,9 +1,7 @@
 package me.combimagnetron.sunscreen.neo.render.engine.phase;
 
 import com.google.common.graph.Traverser;
-import com.google.common.math.BigDecimalMath;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.floats.Float2ObjectArrayMap;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
@@ -11,19 +9,14 @@ import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.GraphicLike;
-import me.combimagnetron.sunscreen.neo.layout.Layout;
-import me.combimagnetron.sunscreen.neo.property.Property;
-import me.combimagnetron.sunscreen.neo.property.RelativeMeasure;
-import me.combimagnetron.sunscreen.neo.property.Size;
-import me.combimagnetron.sunscreen.neo.property.Visibility;
+import me.combimagnetron.sunscreen.neo.property.*;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.neo.element.ElementContainer;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
 import me.combimagnetron.sunscreen.neo.render.engine.cache.RenderCache;
-import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoder;
-import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderTest;
+import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderIHateMyselfMore;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.EncodedRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.ProcessedRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
@@ -34,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -50,7 +42,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Process implements RenderPhase<Draw> {
-        private final Map<BigDecimal, List<ModernElement<?, ?>>> elementsByScale = new HashMap<>();
+        private final Map<Meta, List<ModernElement<?, ?>>> elementsByScale = new HashMap<>();
         private final List<ElementLike<?>> elementList = new LinkedList<>();
         private final SunscreenUser<?> user;
         private final Viewport viewport;
@@ -62,6 +54,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             for (ElementLike<?> unfilteredElement : unfilteredElements) {
                 if (!(unfilteredElement instanceof ModernElement<?,?> modernElement)) continue; // add way to retreive it somehow still
                 BigDecimal scale = modernElement.scale().rounded();
+                Z z = modernElement.z();
                 Visibility visibility = modernElement.visibility();
                 if (visibility.hide()) continue;
                 for (Property<?, ?> property : modernElement.properties()) {
@@ -69,7 +62,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                     if (group.value() != null) continue;
                     group.finish(user.screenInfo().viewport());
                 }
-                List<ModernElement<?, ?>> list = elementsByScale.computeIfAbsent(scale, (_) -> new ArrayList<>());
+                List<ModernElement<?, ?>> list = elementsByScale.computeIfAbsent(new Meta(scale, z.value()), (_) -> new ArrayList<>());
                 list.add(modernElement);
             }
         }
@@ -108,12 +101,12 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Draw implements RenderPhase<Encode> {
-        private final Map<BigDecimal, Canvas> canvasses = new HashMap<>();
-        private final Map<BigDecimal, List<ModernElement<?, ?>>> scaleSeparated;
+        private final Map<Meta, Canvas> canvasses = new HashMap<>();
+        private final Map<Meta, List<ModernElement<?, ?>>> scaleSeparated;
         private final SunscreenUser<?> user;
         private final Viewport viewport;
 
-        public Draw(Map<BigDecimal, List<ModernElement<?, ?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
+        public Draw(Map<Meta, List<ModernElement<?, ?>>> scaleSeparated, Viewport viewport, SunscreenUser<?> user) {
             this.viewport = viewport;
             this.scaleSeparated = scaleSeparated;
             this.user = user;
@@ -126,23 +119,25 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
 
         @Override
         public @NotNull Pair<Encode, RenderContext> advance(@NonNull RenderContext renderContext) {
-            for (Map.Entry<BigDecimal, List<ModernElement<?, ?>>> entry : scaleSeparated.entrySet()) {
-                BigDecimal scale = entry.getKey();
+            for (Map.Entry<Meta, List<ModernElement<?, ?>>> entry : scaleSeparated.entrySet()) {
+                Meta meta = entry.getKey();
+                BigDecimal scale = meta.bigDecimal();
                 Vec2i viewportVec = viewport.currentView();
                 Vec2i canvasSize = Vec2i.of((viewportVec.x() + 127) & ~127, (viewportVec.y() + 127) & ~127);
-                canvasses.computeIfAbsent(scale, _ -> Canvas.empty(canvasSize));
+                canvasses.computeIfAbsent(meta, _ -> Canvas.empty(canvasSize));
                 for (ModernElement<?, ?> elementLike : entry.getValue()) {
                     if (!(elementLike instanceof ModernElement<?, ?> element)) continue;
                     GraphicLike<?> graphics = element.render(Size.fixed(canvasSize), renderContext);
                     Vec2i positionVec = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
-                    canvasses.computeIfPresent(scale,
+                    canvasses.computeIfPresent(meta,
                         (_, canvas) -> canvas.place(graphics.bufferedColorSpace(), positionVec));
                 }
             }
+            
 
             RenderCache cache = renderContext.renderCache();
             for (BigDecimal scale : cache.scales()) {
-                if (scaleSeparated.containsKey(scale)) {
+                if (scaleSeparated.keySet().stream().map(Meta::bigDecimal).toList().contains(scale)) {
                     continue;
                 }
                 renderContext.markedForRemoval().addAll(cache.idsByScale(scale));
@@ -153,7 +148,6 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
     }
 
     class Encode implements RenderPhase<Send> {
-        private long time = System.currentTimeMillis();
         private static final int CHUNK_SIZE = 128;
         private final SunscreenUser<?> user;
 
@@ -169,8 +163,9 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         @Override
         public @NotNull Pair<Send, RenderContext> advance(@NonNull RenderContext renderContext) {
             List<ProcessedRenderChunk> changedChunks = new ArrayList<>();
-            for (Map.Entry<BigDecimal, Canvas> entry : renderContext.start().entrySet()) {
-                BigDecimal scale = entry.getKey();
+            for (Map.Entry<Meta, Canvas> entry : renderContext.start().entrySet()) {
+                Meta meta = entry.getKey();
+                BigDecimal scale = meta.bigDecimal();
                 Canvas canvas = entry.getValue();
                 Vec2i canvasSize = canvas.size();
                 int chunksX = canvasSize.x() / CHUNK_SIZE;
@@ -185,7 +180,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                         int height = Math.min(CHUNK_SIZE, canvasSize.y() - startY);
 
                         BufferedColorSpace sub = canvas.bufferedColorSpace().sub(startX, startY, width, height);
-                        Vec3f gridPos = Vec3f.of((float) (-1 * (x - 2.62)), (float) (-1 *(y - 1.265)), 0f);
+                        Vec3f gridPos = Vec3f.of((float) (-1 * (x - 2.62)), (float) (-1 *(y - 1.265)), meta.z());
                         ProcessedRenderChunk newChunk = new ProcessedRenderChunk(sub, gridPos, scale);
                         Integer id = cache.byPosAndScale(scale, gridPos);
                         boolean exists = id != null;
@@ -207,7 +202,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         private @NotNull Collection<EncodedRenderChunk> encodeChunks(List<ProcessedRenderChunk> changed, RenderCache cache) {
             return changed.stream().map(chunk -> {
                 try {
-                    byte[] bytes = new MapEncoder(chunk).bytes().toByteArray();
+                    byte[] bytes = new MapEncoderIHateMyselfMore(chunk).bytes().toByteArray();
                     EncodedRenderChunk encodedRenderChunk = new EncodedRenderChunk(bytes, chunk.position(), chunk.scale(), chunk.bufferedColorSpace());
                     Integer id = cache.byPosAndScale(chunk.scale(), chunk.position());
                     boolean exists = id != null;
@@ -240,9 +235,9 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             RenderCache renderCache = renderContext.renderCache();
             PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
             final Location location = user.eyeLocation();
-            RenderCache cache = renderContext.renderCache();
+            intermediate.bundleDelimiter(user);
             for (Integer i : renderContext.markedForRemoval()) {
-                cache.remove(i, user);
+                renderContext.renderCache().remove(i, user);
             }
             for (EncodedRenderChunk chunk : chunks) {
                 Integer mapId = renderCache.byPosAndScale(chunk.scale(), chunk.position());
@@ -253,6 +248,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                     intermediate.updateMap(user, mapId, chunk.data());
                 }
             }
+            intermediate.bundleDelimiter(user);
             renderContext.markedForRemoval().clear();
             return Pair.of(new Empty(), renderContext);
         }
@@ -270,6 +266,10 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         public @NotNull Pair<Process, RenderContext> advance(@NonNull RenderContext renderContext) {
             return Pair.of(null, renderContext.clear());
         }
+
+    }
+
+    record Meta(@NotNull BigDecimal bigDecimal, float z) {
 
     }
 

@@ -1,6 +1,9 @@
 package me.combimagnetron.sunscreen.neo.property;
 
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.editor.property.EditorPropertyInfo;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyCategory;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyValueType;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.property.handler.PropertyHandler;
@@ -13,24 +16,25 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> implements Property<Float, Scale> {
+@EditorPropertyInfo(category = PropertyCategory.PROPERTY, valueType = PropertyValueType.SLIDER)
+public class Scale extends RelativeMeasure.DoubleRelativeMeasureGroup<Scale> implements Property<Double, Scale> {
     private static final Scale DEFAULT = Scale.fixed(1.56f);
     private static final PropertyHandler<Scale> HANDLER = (element, context, scale) -> null;
     private boolean lossless = true;
 
-    public Scale(float value) {
+    public Scale(double value) {
         super(value);
     }
 
-    public Scale(@NotNull RelativeMeasure.FloatRelativeMeasureGroup<Scale> measureGroup) {
+    public Scale(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<Scale> measureGroup) {
 
     }
 
-    public static @NotNull Scale fixed(float value) {
+    public static @NotNull Scale fixed(double value) {
         return new Scale(value);
     }
 
-    public static @NotNull Scale relative(@NotNull RelativeMeasure.FloatRelativeMeasureGroup<Scale> measureGroup) {
+    public static @NotNull Scale relative(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<Scale> measureGroup) {
         return new Scale(measureGroup);
     }
 
@@ -52,8 +56,8 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
     }
 
     @Override
-    public @NotNull Class<@NotNull Float> type() {
-        return Float.class;
+    public @NotNull Class<@NotNull Double> type() {
+        return Double.class;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
     }
 
     public @NotNull BigDecimal rounded() {
-        return new BigDecimal(Float.toString(value)).setScale(3, RoundingMode.HALF_UP);
+        return new BigDecimal(Double.toString(value)).setScale(3, RoundingMode.HALF_UP);
     }
 
     public static class PropertyHandlerImpl implements PropertyHandler<Scale> {
@@ -81,14 +85,14 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
 
             }
             boolean rescaleBufferedOnly = false;
-            float value = property.value();
+            double value = property.value();
             if (value != Float.MIN_VALUE) {
                 rescaleBufferedOnly = MathHelper.isPowerOfTwo(value) && !property.lossless();
             }
             Canvas start = renderContext.start().entrySet().stream().findFirst().orElseThrow().getValue();
             if (start == null) return null;
             if (rescaleBufferedOnly) {
-                return start.scale(value);
+                return start.scale((float) value);
             }
             return null;
         }
@@ -98,7 +102,7 @@ public class Scale extends RelativeMeasure.FloatRelativeMeasureGroup<Scale> impl
     public static class Fit extends Scale implements FitToContent<Scale> {
 
         public Fit() {
-            super((Float) null);
+            super(null);
         }
 
         @Override

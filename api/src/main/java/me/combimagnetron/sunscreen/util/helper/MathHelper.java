@@ -4,7 +4,7 @@ public class MathHelper {
 
     private MathHelper() {}
 
-    public static boolean isPowerOfTwo(float x) {
+    public static boolean isPowerOfTwo(double x) {
         if (x <= 0) {
             return false;
         }

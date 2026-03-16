@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * {@link TextElement} implementation for single-lined/limited, small text inputs.
  */
 public class TextFieldElement extends TextElement<TextFieldElement> {
+    private boolean shouldClear = true;
 
     public TextFieldElement(@NotNull Identifier identifier) {
         super(identifier);
@@ -31,6 +32,11 @@ public class TextFieldElement extends TextElement<TextFieldElement> {
     protected void lateInit() {
         super.lateInit();
         input(MouseInputContext.class).listen(this::handleCursor);
+    }
+
+    public @NotNull TextFieldElement shouldClear(boolean shouldClear) {
+        this.shouldClear = shouldClear;
+        return this;
     }
 
     private void handleCursor(UserMoveStateChangeEvent stateChangeEvent) {
@@ -44,7 +50,8 @@ public class TextFieldElement extends TextElement<TextFieldElement> {
         }
         TextInputContext textInputContext = context();
         if (textInputContext.active()) return;
-        inputHandler().anvil();
+        if (shouldClear) inputHandler().peek(TextInputContext.class, TextInputContext::clear, inputHandler().user());
+        inputHandler().anvil(shouldClear);
         inputHandler().cursor(CursorStyle.textCaret());
     }
 
@@ -53,7 +60,7 @@ public class TextFieldElement extends TextElement<TextFieldElement> {
         if (context == null) return Canvas.error(size());
         final TextInputContext textInputContext = context();
         final String input = textInputContext.stream().value();
-        ThemeDecorator<?> decorator = context.theme().find(this.getClass());
+        ThemeDecorator decorator = context.theme().find(this.getClass());
         Canvas canvas = decorator.render(size(), context);
         canvas.text(Text.basic(input).font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(2,2));
         return canvas;

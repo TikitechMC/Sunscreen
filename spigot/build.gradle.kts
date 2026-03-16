@@ -18,14 +18,7 @@ repositories {
     maven("https://repo.codemc.io/repository/maven-snapshots/")
     maven("https://repo.extendedclip.com/releases/")
     maven("https://repo.aikar.co/content/groups/aikar/")
-    maven("https://jitpack.io")
     maven("https://repo.nexomc.com/releases")
-}
-
-configurations.all {
-    resolutionStrategy {
-        cacheChangingModulesFor(0, "seconds")
-    }
 }
 
 tasks {
@@ -91,12 +84,9 @@ dependencies {
 bukkit {
     name = "Sunscreen"
     main = "me.combimagnetron.sunscreen.SunscreenPlugin"
-    apiVersion = "1.21"
+    apiVersion = "1.21.11"
     version = project.version.toString()
     authors = listOf("Combimagnetron")
     description = "Create UIs like never seen before, all from within the game!"
     website = "https://combimagnetron.me"
-    dependencies {
-        softDepend = listOf("MythicHUD", "BetterHud", "TAB")
-    }
 }

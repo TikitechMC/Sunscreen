@@ -1,5 +1,8 @@
 package me.combimagnetron.sunscreen.neo.property;
 
+import me.combimagnetron.sunscreen.neo.editor.property.EditorPropertyInfo;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyCategory;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyValueType;
 import me.combimagnetron.sunscreen.neo.property.handler.PropertyHandler;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
@@ -8,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@EditorPropertyInfo(category = PropertyCategory.PROPERTY, valueType = PropertyValueType.RING_VALUE)
 public class Size extends RelativeMeasure.Vec2iRelativeMeasureGroup<Size> implements Property<Vec2i, Size> {
     private static final PropertyHandler<Size> PROPERTY_HANDLER = (element, context, size) -> null;
     private final Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>> axisMap = new LinkedHashMap<>();

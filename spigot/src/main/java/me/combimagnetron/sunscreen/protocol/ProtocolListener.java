@@ -6,7 +6,9 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
+import com.github.retrooper.packetevents.protocol.sound.SoundCategory;
 import com.github.retrooper.packetevents.protocol.sound.Sounds;
+import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import me.combimagnetron.passport.internal.entity.impl.Interaction;
@@ -22,8 +24,8 @@ import me.combimagnetron.sunscreen.util.Scheduler;
 import me.combimagnetron.sunscreen.util.helper.RotationHelper;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,14 +40,15 @@ public class ProtocolListener implements PacketListener {
             return;
         }
         SunscreenUser<?> user = userOptional.get();
-        if (!inMenu(user)) return;
         switch (packetReceiveEvent.getPacketType()) {
             case PacketType.Play.Client.PLAYER_ROTATION -> handleRotation(new WrapperPlayClientPlayerRotation(packetReceiveEvent), user);
             case PacketType.Play.Client.INTERACT_ENTITY -> handleInteractEntity(packetReceiveEvent, user);
             case PacketType.Play.Client.PLAYER_INPUT -> handleSneak(new WrapperPlayClientPlayerInput(packetReceiveEvent), user);
-            case PacketType.Play.Client.PLAYER_DIGGING -> handleDigging(new WrapperPlayClientPlayerDigging(packetReceiveEvent), user);
+            case PacketType.Play.Client.PLAYER_DIGGING -> handleDigging(packetReceiveEvent, user);
             case PacketType.Play.Client.NAME_ITEM -> handleNameItem(new WrapperPlayClientNameItem(packetReceiveEvent), user);
             case PacketType.Play.Client.HELD_ITEM_CHANGE -> handleSlotChange(new WrapperPlayClientHeldItemChange(packetReceiveEvent), user);
+            case PacketType.Play.Client.CLICK_WINDOW -> handleClick(new WrapperPlayClientClickWindow(packetReceiveEvent), user);
+            case PacketType.Play.Client.CLOSE_WINDOW -> handleCloseWindow(new WrapperPlayClientCloseWindow(packetReceiveEvent), user);
             default -> {}
         }
     }
@@ -60,19 +63,12 @@ public class ProtocolListener implements PacketListener {
         if (!inMenu(user)) return;
         switch (packetSendEvent.getPacketType()) {
             case PacketType.Play.Server.TIME_UPDATE -> handleTimeUpdate(new WrapperPlayServerTimeUpdate(packetSendEvent), user);
-            case PacketType.Play.Server.ENTITY_SOUND_EFFECT -> handleSoundEffect(packetSendEvent, user);
             default -> {}
         }
     }
 
-    private void handleSoundEffect(PacketSendEvent packetSendEvent, SunscreenUser<?> user) {
-        WrapperPlayServerEntitySoundEffect soundEffect = new WrapperPlayServerEntitySoundEffect(packetSendEvent);
-        if (!soundEffect.getSound().getSoundId().equals(Sounds.BLOCK_STONE_HIT.getSoundId())) return;
-        Bukkit.broadcastMessage("Aaaaaa");
-        packetSendEvent.setCancelled(true);
-    }
-
     private void handleSlotChange(WrapperPlayClientHeldItemChange wrapperPlayClientSlotStateChange, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         int slot = wrapperPlayClientSlotStateChange.getSlot();
         final Session session = user.session();
         if (session == null) return;
@@ -80,10 +76,13 @@ public class ProtocolListener implements PacketListener {
     }
 
     private void handleNameItem(WrapperPlayClientNameItem wrapperPlayClientNameItem, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         final Session session = user.session();
         if (session == null) return;
         final InputHandler inputHandler = session.menu().inputHandler();
         final String input = wrapperPlayClientNameItem.getItemName();
+        TextInputContext context = inputHandler.context(TextInputContext.class);
+        if (!context.active()) return;
         if (input.length() == 50) {
             inputHandler.peek(TextInputContext.class, old -> old.append(input), user);
             PlatformProtocolIntermediate protocolIntermediate = SunscreenLibrary.library().intermediate();
@@ -93,39 +92,77 @@ public class ProtocolListener implements PacketListener {
         inputHandler.peek(TextInputContext.class, old -> old.withStream(input), user);
     }
 
-    private void handleDigging(WrapperPlayClientPlayerDigging wrapperPlayClientPlayerDigging, SunscreenUser<?> user) {
+    private void handleDigging(PacketReceiveEvent event, SunscreenUser<?> user) {
+        WrapperPlayClientPlayerDigging wrapperPlayClientPlayerDigging = new WrapperPlayClientPlayerDigging(event);
+        if (inMenu(user)) {
+            final Session session = user.session();
+            if (session == null) return;
+            event.setCancelled(true);
+            final InputHandler inputHandler = session.menu().inputHandler();
+            DiggingAction diggingAction = wrapperPlayClientPlayerDigging.getAction();
+            boolean click;
+            if (diggingAction == DiggingAction.START_DIGGING) {
+                click = true;
+            } else if (diggingAction == DiggingAction.CANCELLED_DIGGING) {
+                click = false;
+            } else {
+                return;
+            }
+            inputHandler.peek(MouseInputContext.class, old -> old.withLeftPressed(click), user);
+        } else {
+            Vector3i vector3i = wrapperPlayClientPlayerDigging.getBlockPosition();
+            Player player = (Player) user.platformSpecificPlayer();
+            World world = player.getWorld();
+            Block block = world.getBlockAt(vector3i.x, vector3i.y, vector3i.z);
+            if (!block.getBlockData().getMaterial().name().contains("COPPER_GRATE")) return;
+            Bukkit.broadcastMessage("je vader");
+            player.playSound(new Location(player.getWorld(), vector3i.x, vector3i.y, vector3i.z), Sound.BLOCK_COPPER_GRATE_HIT, org.bukkit.SoundCategory.BLOCKS, 1f, 1f);
+        }
+    }
+
+    private void handleClick(WrapperPlayClientClickWindow window, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         final Session session = user.session();
         if (session == null) return;
         final InputHandler inputHandler = session.menu().inputHandler();
-        DiggingAction diggingAction = wrapperPlayClientPlayerDigging.getAction();
-        boolean click;
-        Player player = (Player) user.platformSpecificPlayer();
-        player.stopSound(Sound.BLOCK_STONE_HIT);
-        if (diggingAction == DiggingAction.START_DIGGING) {
-            click = true;
-        } else if (diggingAction == DiggingAction.CANCELLED_DIGGING) {
-            click = false;
-        } else {
-            return;
-        }
-        inputHandler.peek(MouseInputContext.class, old -> old.withLeftPressed(click), user);
+        TextInputContext context = inputHandler.context(TextInputContext.class);
+        if (!context.active()) return;
+        inputHandler.peek(TextInputContext.class, old -> old.withActive(false), user);
+        Scheduler.delayTick(() -> {
+            WrapperPlayServerCloseWindow closeWindow = new WrapperPlayServerCloseWindow(window.getWindowId());
+            user.connection().send(closeWindow);
+        });
+    }
+
+    private void handleCloseWindow(WrapperPlayClientCloseWindow closeWindow, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
+        final Session session = user.session();
+        if (session == null) return;
+        final InputHandler inputHandler = session.menu().inputHandler();
+        TextInputContext context = inputHandler.context(TextInputContext.class);
+        if (!context.active()) return;
+        inputHandler.peek(TextInputContext.class, old -> old.withActive(false), user);
     }
 
     private void handleTimeUpdate(WrapperPlayServerTimeUpdate wrapperPlayServerTimeUpdate, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         wrapperPlayServerTimeUpdate.setWorldAge(-2000);
     }
 
     public void handleSneak(WrapperPlayClientPlayerInput input, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         if (input.isShift()) user.session().menu().close();
     }
 
     private void handleInteractEntity(PacketReceiveEvent packetReceiveEvent, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         WrapperPlayClientInteractEntity wrapperPlayClientInteractEntity = new WrapperPlayClientInteractEntity(packetReceiveEvent);
         if (wrapperPlayClientInteractEntity.getEntityId() != user.entityId()) return;
         packetReceiveEvent.setCancelled(true);
     }
 
     private void handleRotation(WrapperPlayClientPlayerRotation wrapperPlayClientPlayerRotation, SunscreenUser<?> user) {
+        if (!inMenu(user)) return;
         final Session session = user.session();
         if (session == null) return;
         final InputHandler inputHandler = session.menu().inputHandler();

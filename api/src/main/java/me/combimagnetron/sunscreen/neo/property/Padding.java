@@ -1,6 +1,9 @@
 package me.combimagnetron.sunscreen.neo.property;
 
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.editor.property.EditorPropertyInfo;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyCategory;
+import me.combimagnetron.sunscreen.neo.editor.property.PropertyValueType;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.property.handler.PropertyHandler;
@@ -13,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@EditorPropertyInfo(category = PropertyCategory.PROPERTY, valueType = PropertyValueType.RING_MULTI_VALUE)
 public class Padding extends RelativeMeasure.Vec4iRelativeMeasureGroup<Padding> implements Property<Vec4i, Padding> {
     private static final PropertyHandler<Padding> PROPERTY_HANDLER = (element, context, padding) -> null;
     private final Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<Padding>> axisMap = new LinkedHashMap<>();

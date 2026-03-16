@@ -169,23 +169,23 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
 
     }
 
-    abstract class FloatRelativeMeasureGroup<C> implements RelativeMeasureGroup<Float> {
-        private final RelativeBuilder<FloatRelativeMeasureGroup<C>> relativeBuilder = RelativeBuilder.of(this);
-        protected float value;
+    abstract class DoubleRelativeMeasureGroup<C> implements RelativeMeasureGroup<Double> {
+        private final RelativeBuilder<DoubleRelativeMeasureGroup<C>> relativeBuilder = RelativeBuilder.of(this);
+        protected double value;
 
-        public FloatRelativeMeasureGroup(float value) {
+        public DoubleRelativeMeasureGroup(double value) {
             this.value = value;
         }
 
-        public FloatRelativeMeasureGroup() {
+        public DoubleRelativeMeasureGroup() {
 
         }
 
-        public @NotNull RelativeBuilder<FloatRelativeMeasureGroup<C>> set() {
+        public @NotNull RelativeBuilder<DoubleRelativeMeasureGroup<C>> set() {
             return relativeBuilder;
         }
 
-        public Float value() {
+        public Double value() {
             return value;
         }
 

@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RenderCache {
-    private final static int MIN_MAP_ID = Integer.MAX_VALUE - 500;
+    private final static int MIN_MAP_ID = 10_000;
     private final AtomicInteger mapIdCounter = new AtomicInteger(MIN_MAP_ID);
     private final Table<BigDecimal, Vec3f, Integer> scaleToIdByPositionTable = HashBasedTable.create();
     private final Int2ObjectMap<RenderChunk> idToChunkMap = new Int2ObjectArrayMap<>();
@@ -85,13 +85,14 @@ public class RenderCache {
     public void remove(int id) {
         RenderChunk chunk = idToChunkMap.remove(id);
         if (chunk != null) invertedIdToChunkMap.removeInt(chunk);
+        scaleToIdByPositionTable.remove(chunk.scale(), chunk.position());
         idToHashcodeMap.remove(id);
     }
 
     public void remove(int id, @NotNull SunscreenUser<?> user) {
         remove(id);
         SunscreenLibrary.library().intermediate().removeEntity(user, id);
-        SunscreenLibrary.library().intermediate().removeEntity(user, id - 500);
+        SunscreenLibrary.library().intermediate().removeEntity(user, Integer.MIN_VALUE + id);
     }
 
     public @Nullable RenderChunk get(BigDecimal scale, @NotNull Vec3f position) {

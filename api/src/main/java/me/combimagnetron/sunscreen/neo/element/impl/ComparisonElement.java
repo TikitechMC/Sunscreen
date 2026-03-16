@@ -25,7 +25,7 @@ public class ComparisonElement extends GenericInteractableModernElement<Comparis
     private CursorStyle style = CursorStyle.pointer();
     private Canvas left;
     private Canvas right;
-    private float value = 0;
+    private float value = 50;
 
     public ComparisonElement(@NotNull Identifier identifier) {
         super(identifier);

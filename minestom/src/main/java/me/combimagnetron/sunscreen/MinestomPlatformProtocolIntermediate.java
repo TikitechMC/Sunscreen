@@ -169,6 +169,11 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
     }
 
     @Override
+    public void bundleDelimiter(@NotNull SunscreenUser<?> user) {
+
+    }
+
+    @Override
     public void openEmptyAnvil(SunscreenUser<?> user) {
         final Player player = (Player) user.platformSpecificPlayer();
         AnvilInventory anvilInventory = new AnvilInventory("");

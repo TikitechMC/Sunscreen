@@ -1,10 +1,13 @@
 package me.combimagnetron.sunscreen.neo.protocol;
 
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
+import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import org.jetbrains.annotations.NotNull;
+
+import java.math.BigDecimal;
 
 public interface PlatformProtocolIntermediate {
 
@@ -24,6 +27,7 @@ public interface PlatformProtocolIntermediate {
 
     void gameTime(@NotNull SunscreenUser<?> user);
 
+    void bundleDelimiter(@NotNull SunscreenUser<?> user);
 
     void openEmptyAnvil(SunscreenUser<?> user);
 

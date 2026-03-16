@@ -1,5 +1,6 @@
 package me.combimagnetron.sunscreen.neo.property;
 
+import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +17,10 @@ public interface PropertyContainer<R> {
     default <T, C, P extends Property<T, C>> @NotNull P propOr(@NotNull Class<P> propertyClass, @NotNull P or) {
         P p = property(propertyClass);
         return p == null ? or : p;
+    }
+
+    default <T, C, P extends Property<T, C>> @Nullable P propOrNull(@NotNull Class<P> propertyClass) {
+        return property(propertyClass);
     }
 
     default <T, C, P extends Property<T, C>> @NotNull P propOrThrow(@NotNull Class<P> propertyClass) {
@@ -48,6 +53,14 @@ public interface PropertyContainer<R> {
         return propOr(Visibility.class, Visibility.visible());
     }
 
+    default @NotNull Z z() {
+        return propOr(Z.class, Z.middle());
+    }
+
+    default @Nullable Decorator<?> decorator() {
+        return propOrNull(Decorator.class);
+    }
+
     default @NotNull R size(@NotNull Size size) {
         return property(size);
     }
@@ -70,6 +83,14 @@ public interface PropertyContainer<R> {
 
     default @NotNull R visibility(@NotNull Visibility visibility) {
         return property(visibility);
+    }
+
+    default @NotNull R z(@NotNull Z z) {
+        return property(z);
+    }
+
+    default @NotNull R decorator(@NotNull Decorator<?> decorator) {
+        return property(decorator);
     }
 
 }

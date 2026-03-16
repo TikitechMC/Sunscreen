@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-public class PaddingMarginElement extends GenericInteractableModernElement<PaddingMarginElement, Canvas, PaddingMarginElement.PaddingMarginElementListenerReferences> {
+public class MultiValueSelectorElement extends GenericInteractableModernElement<MultiValueSelectorElement, Canvas, MultiValueSelectorElement.PaddingMarginElementListenerReferences> {
     private static final Vec2i SIZE = Vec2i.of(137, 38);
     private static final Canvas SELECTED_PANES = Canvas.file(FileProvider.resource().find("panes_selected.png").toPath());
     private final PaddingMarginElementListenerReferences references = new PaddingMarginElementListenerReferences(this);
@@ -32,7 +32,7 @@ public class PaddingMarginElement extends GenericInteractableModernElement<Paddi
     private Section hovered = null;
     private int[] values = new int[8];
 
-    public PaddingMarginElement(@Nullable Identifier identifier) {
+    public MultiValueSelectorElement(@Nullable Identifier identifier) {
         super(identifier);
         size(Size.fixed(SIZE));
     }
@@ -111,22 +111,29 @@ public class PaddingMarginElement extends GenericInteractableModernElement<Paddi
         canvas.text(Text.basic("(Content)").font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(48, 17));
         canvas.text(Text.basic(String.valueOf(values[0])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(60, 2));
         canvas.text(Text.basic(String.valueOf(values[1])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(60, 10));
+        canvas.text(Text.basic(String.valueOf(values[6])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(126, 17));
+        canvas.text(Text.basic(String.valueOf(values[7])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(112, 17));
+        canvas.text(Text.basic(String.valueOf(values[4])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(6, 17));
+        canvas.text(Text.basic(String.valueOf(values[5])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(20, 17));
+        canvas.text(Text.basic(String.valueOf(values[3])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(60, 24));
+        canvas.text(Text.basic(String.valueOf(values[2])).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6)), Vec2i.of(60, 31));
         return canvas;
     }
 
-    public record PaddingMarginElementListenerReferences(PaddingMarginElement back) implements ListenerReferences<PaddingMarginElement, PaddingMarginElementListenerReferences> {
+    public record PaddingMarginElementListenerReferences(
+        MultiValueSelectorElement back) implements ListenerReferences<MultiValueSelectorElement, PaddingMarginElementListenerReferences> {
 
     }
 
     public enum Section {
         TOP_OUTSIDE(Vec2i.of(2, 0), SELECTED_PANES.sub(Vec2i.of(0, 0), Vec2i.of(133, 9))),
-        TOP_INSIDE(Vec2i.of(17, 8), SELECTED_PANES.sub(Vec2i.of(0, 54), Vec2i.of(103, 9)));
-//        BOTTOM_OUTSIDE(),
-//        BOTTOM_INSIDE(),
-//        LEFT_OUTSIDE(),
-//        LEFT_INSIDE(),
-//        RIGHT_OUTSIDE(),
-//        RIGHT_INSIDE();
+        TOP_INSIDE(Vec2i.of(17, 8), SELECTED_PANES.sub(Vec2i.of(0, 55), Vec2i.of(103, 9))),
+        BOTTOM_OUTSIDE(Vec2i.of(2, 30), SELECTED_PANES.sub(Vec2i.of(0, 9), Vec2i.of(133, 8))),
+        BOTTOM_INSIDE(Vec2i.of(17, 22), SELECTED_PANES.sub(Vec2i.of(0, 64), Vec2i.of(103, 9))),
+        LEFT_OUTSIDE(Vec2i.of(0, 0), SELECTED_PANES.sub(Vec2i.of(48, 17), Vec2i.of(16, 38))),
+        LEFT_INSIDE(Vec2i.of(15, 8), SELECTED_PANES.sub(Vec2i.of(16, 17), Vec2i.of(16, 23))),
+        RIGHT_OUTSIDE(Vec2i.of(121, 0), SELECTED_PANES.sub(Vec2i.of(32, 17), Vec2i.of(16, 38))),
+        RIGHT_INSIDE(Vec2i.of(106, 8), SELECTED_PANES.sub(Vec2i.of(0, 17), Vec2i.of(16, 23)));
 
         private final Vec2i position;
         private final Canvas overlay;

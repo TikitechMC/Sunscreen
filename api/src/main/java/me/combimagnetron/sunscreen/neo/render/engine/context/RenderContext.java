@@ -1,24 +1,26 @@
 package me.combimagnetron.sunscreen.neo.render.engine.context;
 
-import it.unimi.dsi.fastutil.ints.IntCollection;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
+import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponent;
+import me.combimagnetron.sunscreen.neo.property.Decorator;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
 import me.combimagnetron.sunscreen.neo.render.engine.cache.RenderCache;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.ProcessedRenderChunk;
+import me.combimagnetron.sunscreen.neo.render.engine.phase.RenderPhase;
 import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
+import me.combimagnetron.sunscreen.neo.theme.decorator.ThemeDecorator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 public final class RenderContext {
     private final RenderCache renderCache;
     private final Collection<byte[]> bytes;
-    private final Map<BigDecimal, Canvas> canvasses;
+    private final Map<RenderPhase.Meta, Canvas> canvasses;
     private final Collection<MenuComponent<?>> loadedComponents;
     private final Collection<Integer> markedForRemoval;
     private boolean stop = false;
@@ -41,7 +43,7 @@ public final class RenderContext {
                           @NotNull Collection<Integer> markedForRemoval,
                           @NotNull RenderCache renderCache,
                           @NotNull Collection<byte[]> bytes,
-                          @NotNull Map<BigDecimal, Canvas> canvasses, @NotNull Collection<MenuComponent<?>> loadedComponents) {
+                          @NotNull Map<RenderPhase.Meta, Canvas> canvasses, @NotNull Collection<MenuComponent<?>> loadedComponents) {
         this.viewport = viewport;
         this.tree = tree;
         this.markedForRemoval = markedForRemoval;
@@ -66,13 +68,21 @@ public final class RenderContext {
             canvasses, loadedComponents);
     }
 
-    public @NotNull RenderContext withStart(@Nullable Map<BigDecimal, Canvas> start) {
-        if (start != null) canvasses.putAll(start);
-        return this;
+    public @NotNull RenderContext withStart(@Nullable Map<RenderPhase.Meta, Canvas> canvasses) {
+        if (canvasses == null) canvasses = new HashMap<>();
+        return new RenderContext(viewport, tree, markedForRemoval, renderCache, bytes,
+            canvasses, loadedComponents);
     }
 
     public @NotNull ModernTheme theme() {
         return (ModernTheme) loadedComponents.stream().filter(menuComponent -> menuComponent.type().equals(ModernTheme.class)).findAny().orElseThrow();
+    }
+
+    public @Nullable ThemeDecorator decorator(@NotNull ModernElement<?, ?> elementLike) {
+        ModernTheme theme = theme();
+        Decorator<?> decorator = elementLike.property(Decorator.class);
+        if (decorator == null || decorator.target().target().equals(elementLike.getClass())) return theme.find(elementLike.getClass());
+        return theme.find(decorator.target());
     }
 
     public void stop(boolean stop) {
@@ -115,7 +125,7 @@ public final class RenderContext {
         return tree;
     }
 
-    public @NotNull Map<BigDecimal, Canvas> start() {
+    public @NotNull Map<RenderPhase.Meta, Canvas> start() {
         return canvasses;
     }
 
@@ -135,7 +145,6 @@ public final class RenderContext {
         this.viewport = null;
         this.tree = null;
         this.markedForRemoval.clear();
-        //this.renderCache.clear();
         return this;
     }
 
