@@ -16,7 +16,7 @@ import me.combimagnetron.sunscreen.neo.element.ElementContainer;
 import me.combimagnetron.sunscreen.neo.element.ElementLike;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
 import me.combimagnetron.sunscreen.neo.render.engine.cache.RenderCache;
-import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderIHateMyselfMore;
+import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderFactory;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.EncodedRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.ProcessedRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
@@ -202,7 +202,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
         private @NotNull Collection<EncodedRenderChunk> encodeChunks(List<ProcessedRenderChunk> changed, RenderCache cache) {
             return changed.stream().map(chunk -> {
                 try {
-                    byte[] bytes = new MapEncoderIHateMyselfMore(chunk).bytes().toByteArray();
+                    byte[] bytes = MapEncoderFactory.encode(chunk).toByteArray();
                     EncodedRenderChunk encodedRenderChunk = new EncodedRenderChunk(bytes, chunk.position(), chunk.scale(), chunk.bufferedColorSpace());
                     Integer id = cache.byPosAndScale(chunk.scale(), chunk.position());
                     boolean exists = id != null;
