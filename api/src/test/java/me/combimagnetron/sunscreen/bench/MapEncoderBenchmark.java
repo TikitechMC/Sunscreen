@@ -4,6 +4,7 @@ import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderIHateMyselfMore;
+import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderSimd;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.ProcessedRenderChunk;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
@@ -13,11 +14,11 @@ import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Thread)
 @Warmup(iterations = 3, batchSize = 1)
 @Measurement(iterations = 5, batchSize = 1)
-@Fork(1)
+@Fork(value = 1, jvmArgsAppend = {"--add-modules=jdk.incubator.vector"})
 public class MapEncoderBenchmark {
 
     private ProcessedRenderChunk renderChunk;
@@ -29,8 +30,14 @@ public class MapEncoderBenchmark {
     }
 
     @Benchmark
-    public byte[] encode() {
+    public byte[] encodeScalar() {
         MapEncoderIHateMyselfMore encoder = new MapEncoderIHateMyselfMore(renderChunk);
+        return encoder.bytes().toByteArray();
+    }
+
+    @Benchmark
+    public byte[] encodeSimd() {
+        MapEncoderSimd encoder = new MapEncoderSimd(renderChunk);
         return encoder.bytes().toByteArray();
     }
 
