@@ -16,18 +16,12 @@ dependencies {
     testImplementation(libs.bundles.utils)
 }
 
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("--add-modules=jdk.incubator.vector")
-}
-
 tasks.test {
     useJUnitPlatform()
-    jvmArgs("--add-modules=jdk.incubator.vector")
 }
 
 tasks.register<JavaExec>("jmh") {
     dependsOn("testClasses")
     mainClass.set("me.combimagnetron.sunscreen.bench.MapEncoderBenchmark")
     classpath = sourceSets["test"].runtimeClasspath
-    jvmArgs("--add-modules=jdk.incubator.vector")
 }
