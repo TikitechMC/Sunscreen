@@ -35,6 +35,7 @@ public class MapEncoderIHateMyselfMore {
     private int paletteId;
 
     public MapEncoderIHateMyselfMore() {
+        this.globalColorLookup.defaultReturnValue(-1);
         for (int i = 0; i < PALETTE_COUNT; i++) {
             localPalettes[i] = new LocalPalette(i);
         }
