@@ -48,7 +48,9 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     @Override
     protected void lateInit() {
         super.lateInit();
-        input(MouseInputContext.class).listen(this::handleCursor);
+        InputHandler handler = inputHandler();
+        if (handler == null) return;
+        handler.subscribe(MouseInputContext.class, this::handleCursor);
     }
 
     public @NotNull ButtonElement canvas(@Nullable Canvas canvas) {

@@ -10,6 +10,7 @@ import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.shape.Shape;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
+import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
@@ -40,7 +41,9 @@ public class ValueSelectorElement extends GenericInteractableModernElement<Value
     @Override
     protected void lateInit() {
         super.lateInit();
-        input(MouseInputContext.class).listen(this::handleCursor);
+        InputHandler handler = inputHandler();
+        if (handler == null) return;
+        handler.subscribe(MouseInputContext.class, this::handleCursor);
     }
 
     private void handleCursor(@NotNull UserMoveStateChangeEvent event) {

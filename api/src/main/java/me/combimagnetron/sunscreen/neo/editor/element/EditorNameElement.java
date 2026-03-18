@@ -8,6 +8,7 @@ import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
+import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.input.context.TextInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
@@ -30,7 +31,9 @@ public class EditorNameElement extends TextElement<EditorNameElement> {
     @Override
     protected void lateInit() {
         super.lateInit();
-        input(MouseInputContext.class).listen(this::handleCursor);
+        InputHandler handler = inputHandler();
+        if (handler == null) return;
+        handler.subscribe(MouseInputContext.class, this::handleCursor);
     }
 
     private void handleCursor(UserMoveStateChangeEvent stateChangeEvent) {

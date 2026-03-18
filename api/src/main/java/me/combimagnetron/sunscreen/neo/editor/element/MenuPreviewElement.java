@@ -3,11 +3,14 @@ package me.combimagnetron.sunscreen.neo.editor.element;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.cursor.CursorStyle;
+import me.combimagnetron.sunscreen.neo.editor.virtual.VirtualMenu;
+import me.combimagnetron.sunscreen.neo.editor.virtual.VirtualPage;
 import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.event.UserScrollStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
+import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.input.context.ScrollInputContext;
@@ -29,9 +32,11 @@ public class MenuPreviewElement extends GenericInteractableModernElement<MenuPre
     private Vec2i lastPos = null;
     private Vec2i center = Vec2i.of(940, 940);
 
-    public MenuPreviewElement(@Nullable Identifier identifier) {
+    public MenuPreviewElement(@Nullable Identifier identifier, @NotNull VirtualMenu menu) {
         super(identifier);
         Vec2i size = Vec2i.of(2048, 2048);
+        Canvas ihatemylife = Canvas.empty(Vec2i.of(459, 258));
+        ihatemylife.fill(Vec2i.zero(), Vec2i.of(459, 258), Color.of(255, 255, 255));
         canvas = Canvas.empty(size);
         for (int y = 0; y < size.y(); y++) {
             for (int x = 0; x < size.x(); x++) {
@@ -39,14 +44,17 @@ public class MenuPreviewElement extends GenericInteractableModernElement<MenuPre
                 canvas.color(Vec2i.of(x, y), gray ? GRAY : WHITE);
             }
         }
-        canvas.place(Canvas.resource("normal.png"), Vec2i.of(1024, 1024));
+        ihatemylife.place(Canvas.resource("normal.png"), Vec2i.of(172, 52));
+        canvas.place(ihatemylife, Vec2i.of(1024, 1024));
     }
 
     @Override
     protected void lateInit() {
         super.lateInit();
-        input(ScrollInputContext.class).listen(this::handleScroll);
-        input(MouseInputContext.class).listen(this::handleCursor);
+        InputHandler handler = inputHandler();
+        if (handler == null) return;
+        handler.subscribe(ScrollInputContext.class, this::handleScroll);
+        handler.subscribe(MouseInputContext.class, this::handleCursor);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -57,7 +65,7 @@ public class MenuPreviewElement extends GenericInteractableModernElement<MenuPre
             inputHandler().cursor(CursorStyle.pointer());
             style = CursorStyle.pointer();
         }
-        if (!context.leftPressed()) {
+        if (!context.rightPressed()) {
             lastPos = null;
             return;
         }
@@ -89,11 +97,11 @@ public class MenuPreviewElement extends GenericInteractableModernElement<MenuPre
         } else {
             newScale = currentScale/1.010;
         }
-        if (newScale <= 0.1f) {
-            newScale = 0.1f;
+        if (newScale <= 0.1) {
+            newScale = 0.1;
         }
-        if (newScale >= 1.561f) {
-            newScale = 1.561f;
+        if (newScale >= 1.561) {
+            newScale = 1.561;
         }
         scale(Scale.fixed(newScale));
     }

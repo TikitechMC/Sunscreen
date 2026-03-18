@@ -114,6 +114,7 @@ public class ActiveMenu implements IdentifierHolder {
     public void close() {
         SunscreenLibrary.library().sessionHandler().remove(user);
         renderPipeline.stop();
+        inputHandler.close();
         PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
         intermediate.reset(user, initialRotation);
     }

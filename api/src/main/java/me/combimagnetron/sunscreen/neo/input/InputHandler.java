@@ -2,6 +2,8 @@ package me.combimagnetron.sunscreen.neo.input;
 
 import me.combimagnetron.passport.event.Dispatcher;
 import me.combimagnetron.passport.event.Event;
+import me.combimagnetron.passport.event.EventBus;
+import me.combimagnetron.passport.event.EventSubscription;
 import me.combimagnetron.passport.logic.state.State;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
@@ -16,11 +18,16 @@ import me.combimagnetron.sunscreen.util.Scheduler;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
+import java.beans.EventHandler;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class InputHandler {
+    private final Collection<EventSubscription<?>> subscriptions = new HashSet<>();
     private final Map<Class<? extends InputContext<?>>, InputContext<?>> inputContextMap = new HashMap<>();
     private final ActiveMenu activeMenu;
 
@@ -49,8 +56,19 @@ public class InputHandler {
         return mutatedInput;
     }
 
-    public<C extends InputContext<?>> @NotNull C context(@NotNull Class<C> type) {
+    public <C extends InputContext<?>> @NotNull C context(@NotNull Class<C> type) {
         return (C) inputContextMap.get(type);
+    }
+
+    public <C extends InputContext<?>, E extends Event> void subscribe(@NotNull Class<C> contextType, @NotNull Consumer<E> consumer) {
+        C context = context(contextType);
+        subscriptions.add(EventBus.subscribe(context.eventType(), (Consumer) consumer));
+    }
+
+    public void close() {
+        for (EventSubscription<?> subscription : subscriptions) {
+            subscription.close();
+        }
     }
 
     public void cursor(@NotNull CursorStyle cursorStyle) {
