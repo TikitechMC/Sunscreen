@@ -54,7 +54,7 @@ public class EditorMenuTemplate implements MenuTemplate {
         root/*.element(
             Elements.image(Identifier.of("background"), Canvas.url("https://i.imgur.com/PNCpUmN.png")).position(Position.nil()).z(Z.z(0.05f))
         )*/.element(
-            new MenuPreviewElement(Identifier.of("wow")).position(Position.fixed(Vec2i.of(139, 15))).size(Size.fixed(Vec2i.of(518, 432))).scale(Scale.fixed(1.561)).z(Z.z(0.1f))
+            new MenuPreviewElement(Identifier.of("wow"), null).position(Position.fixed(Vec2i.of(139, 15))).size(Size.fixed(Vec2i.of(518, 432))).scale(Scale.fixed(1.561)).z(Z.z(0.1f))
         ).element(
             new MultiValueSelectorElement(Identifier.of("hello")).position(Position.fixed(Vec2i.of(660, 41)))
         ).element(

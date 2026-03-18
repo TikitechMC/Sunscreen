@@ -126,7 +126,12 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.EXPOSED_COPPER_GRATE));
         user.connection().send(new WrapperPlayServerEntityEffect(player.getEntityId(), PotionTypes.INVISIBILITY, 255, -1, ((byte) 0)));
         // todo: fix invis potion
+        ItemStack stack = ItemStack.builder().type(ItemTypes.TRIDENT).component(ComponentTypes.ITEM_NAME, Component.empty()).component(ComponentTypes.ITEM_MODEL, new ItemModel(ResourceLocation.minecraft("air"))).build();
+        WrapperPlayServerWindowItems items = new WrapperPlayServerWindowItems(0, 0, Collections.nCopies(44, stack), stack);
+        WrapperPlayServerSetSlot slot = new WrapperPlayServerSetSlot(0, 0, 45, stack);
         player.setInvisible(true);
+        user.connection().send(slot);
+        user.connection().send(items);
         user.connection().send(infoUpdate);
         user.connection().send(spawnEntity);
         user.connection().send(camera);

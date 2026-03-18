@@ -10,7 +10,7 @@ public interface EditorElements {
     }
 
     static @NotNull MenuPreviewElement preview(@NotNull Identifier identifier) {
-        return new MenuPreviewElement(identifier);
+        return new MenuPreviewElement(identifier, null);
     }
 
     static @NotNull MultiValueSelectorElement paddingMargin(@NotNull Identifier identifier) {
