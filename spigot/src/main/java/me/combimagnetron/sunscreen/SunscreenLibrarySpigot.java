@@ -45,10 +45,10 @@ public class SunscreenLibrarySpigot implements SunscreenLibrary<SunscreenPlugin,
                 return placeholderRegistry;
             }
 
-            @Override
-            public PacketEventsAPI<?> packetEventsApi() {
-                return PacketEvents.getAPI();
-            }
+//            @Override
+//            public PacketEventsAPI<?> packetEventsApi() {
+//                return PacketEvents.getAPI();
+//            }
 
             @Override
             public SunscreenPlugin plugin() {

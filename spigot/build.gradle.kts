@@ -5,6 +5,7 @@ plugins {
     id("com.gradleup.shadow") version "9.2.2"
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
     //id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
@@ -74,11 +75,13 @@ fun libs(): LibrariesForLibs {
 dependencies {
     implementation(project(":api"))
     implementation(project(":common"))
-    implementation(libs().packetevents)
+    //implementation(libs().packetevents)
     implementation(libs().lamp.paper)
     implementation(libs().lamp.brigadier)
     compileOnly(libs().paper)
     library(libs().bundles.utils)
+
+    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
 }
 
 bukkit {

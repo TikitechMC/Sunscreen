@@ -1,9 +1,9 @@
 package me.combimagnetron.sunscreen.protocol;
 
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
-
-public class AbstractProtocolListener extends PacketListenerCommon {
-
-
-
-}
+//import com.github.retrooper.packetevents.event.PacketListenerCommon;
+//
+//public class AbstractProtocolListener extends PacketListenerCommon {
+//
+//
+//
+//}
