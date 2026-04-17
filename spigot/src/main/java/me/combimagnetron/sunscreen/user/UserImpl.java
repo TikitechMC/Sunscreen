@@ -18,6 +18,8 @@ import me.combimagnetron.sunscreen.neo.render.ScreenInfo;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
 import me.combimagnetron.sunscreen.neo.session.Session;
 import me.combimagnetron.passport.util.math.Vec2i;
+import net.minecraft.network.protocol.Packet;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -155,8 +157,8 @@ public class UserImpl implements SunscreenUser<Player> {
         }
 
         @Override
-        public void send(PacketWrapper<?> packetHolder) {
-            PacketEvents.getAPI().getPlayerManager().sendPacket(player, packetHolder);
+        public void send(Packet<?> packetHolder) {
+            ((CraftPlayer) player).getHandle().connection.send(packetHolder);
         }
     }
 
