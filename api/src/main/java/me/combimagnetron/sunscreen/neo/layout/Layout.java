@@ -2,6 +2,7 @@ package me.combimagnetron.sunscreen.neo.layout;
 
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.element.ElementContainer;
+import me.combimagnetron.sunscreen.neo.element.Elements;
 import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
@@ -18,14 +19,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public interface Layout<E extends ModernElement<E, Canvas>> extends ElementContainer<Layout<E>> {
 
      @NotNull E root();
+
+     @Nullable ModernElement<?, Canvas> child(@NotNull Identifier identifier);
+
+     @NotNull Layout<E> addUnchecked(ModernElement<?, Canvas> element);
 
      static @NotNull FlowLayout<?> flow(@NotNull Identifier identifier) {
          return new FlowLayout<>(identifier);
@@ -62,6 +65,16 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
          }
 
          @Override
+         public @Nullable ModernElement<?, Canvas> child(@NotNull Identifier identifier) {
+             return elements.stream().filter(element -> element.identifier() == identifier).findAny().orElseThrow();
+         }
+
+         @Override
+         public @NotNull Layout<E> addUnchecked(ModernElement<?, Canvas> element) {
+             return null;
+         }
+
+         @Override
          public void inputHandler(@NotNull InputHandler handler) {
              this.handler = handler;
          }
@@ -72,19 +85,19 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
          }
 
          @Override
-         public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> add(@NotNull L elementLike) {
+         public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> add(@NotNull L elementLike) {
              elements.add(elementLike);
              return this;
          }
 
          @Override
-         public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> add(@NotNull Iterable<@NotNull L> elementLikes) {
+         public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> add(@NotNull Iterable<@NotNull L> elementLikes) {
              elementLikes.forEach(elements::add);
              return this;
          }
 
          @Override
-         public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> remove(@NotNull L elementLike) {
+         public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> remove(@NotNull L elementLike) {
              elements.remove(elementLike);
              return this;
          }
@@ -141,66 +154,82 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
 
     class GroupLayout<E extends ModernElement<E, Canvas>> implements Layout<E> {
         private final PropertyMap propertyMap = new PropertyMap();
-        private final List<ModernElement<?, Canvas>> elements = new ArrayList<>();
+        protected final Map<Identifier, ModernElement<?, Canvas>> elements = new LinkedHashMap<>();
         private final Identifier identifier;
         private InputHandler handler;
 
         protected GroupLayout(Identifier identifier, ModernElement<?, Canvas>... elementLikes) {
             this.identifier = identifier;
-            elements.addAll(List.of(elementLikes));
+            for (ModernElement<?, Canvas> elementLike : elementLikes) {
+                elements.put(elementLike.identifier(), elementLike);
+            }
         }
 
         @Override
         public @NonNull E root() {
-            return (E) elements.getFirst();
+            return (E) elements.values().stream().findFirst().orElseThrow();
         }
 
         @Override
         public void inputHandler(@NotNull InputHandler handler) {
             this.handler = handler;
-            for (ModernElement<?, Canvas> elementLike : elements) {
-                Vec2i vecPos = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
-                Vec2i layoutVecPos = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
-                elementLike.position(Position.fixed(vecPos.add(layoutVecPos)));
-                if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) continue;
-                interactableModernElement.inputHandler(handler);
+            for (ModernElement<?, Canvas> elementLike : elements.values()) {
+                handleElement(elementLike);
             }
+        }
+
+        private void handleElement(@NotNull ModernElement<?, Canvas> elementLike) {
+            Vec2i vecPos = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
+            Vec2i layoutVecPos = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
+            elementLike.position(Position.fixed(vecPos.add(layoutVecPos)));
+            if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) return;
+            interactableModernElement.inputHandler(handler);
+        }
+
+        @Override
+        public @Nullable ModernElement<?, Canvas> child(@NotNull Identifier identifier) {
+            return elements.get(identifier);
+        }
+
+        @Override
+        public @NotNull Layout<E> addUnchecked(ModernElement<?, Canvas> element) {
+            add((E) element);
+            handleElement(element);
+            return this;
         }
 
         @Override
         public @NotNull Collection<ModernElement<?, Canvas>> children() {
-            return elements;
+            return elements.values();
         }
 
         @Override
-        public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> add(@NotNull L elementLike) {
-            elements.add(elementLike);
-            if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) return this;
-            if (handler == null) return this;
-            interactableModernElement.inputHandler(handler);
+        public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> add(@NotNull L elementLike) {
+            elements.put(elementLike.identifier(), elementLike);
             return this;
         }
 
         @Override
-        public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> add(@NotNull Iterable<@NotNull L> elementLikes) {
-            elementLikes.forEach(elements::add);
+        public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> add(@NotNull Iterable<@NotNull L> elementLikes) {
+            for (L elementLike : elementLikes) {
+                elements.put(elementLike.identifier(), elementLike);
+            }
             for (ModernElement<?, Canvas> elementLike : elementLikes) {
-                if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) continue;
-                if (handler == null) continue;
-                interactableModernElement.inputHandler(handler);
+                handleElement(elementLike);
             }
             return this;
         }
 
         @Override
-        public @NotNull <L extends ModernElement<L, Canvas>> ElementContainer<@NotNull Layout<E>> remove(@NotNull L elementLike) {
+        public @NotNull <L extends ModernElement<L, Canvas>> Layout<E> remove(@NotNull L elementLike) {
             elements.remove(elementLike);
             return this;
         }
 
         @Override
         public @NotNull ElementContainer<@NotNull Layout<E>> remove(@NotNull Identifier identifier) {
-            elements.removeIf(elementLike -> elementLike.identifier().anyMatch(identifier, Identifier.TestDepth.WHOLE));
+            elements.remove(identifier);
+            //handler.unlink(identifier);
             return this;
         }
 
@@ -215,7 +244,7 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
         }
 
         @Override
-        public @NonNull <T, C> Layout<E> property(@NotNull Property<T, C> property) {
+        public @NotNull <T, C> Layout<E> property(@NotNull Property<T, C> property) {
             propertyMap.put((Class<? extends Property<?, ?>>) property.getClass(), property);
             return this;
         }
@@ -226,15 +255,22 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
         }
 
         @Override
-        public @NonNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
+        public @NotNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
+            for (ModernElement<?, Canvas> value : elements.values()) {
+                value.visibility(visibility());
+            }
             Vec2i calculatedSize = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
             Canvas finalCanvas = Canvas.empty(calculatedSize);
             Vec2i layoutPosVec = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
-            for (ModernElement<?, Canvas> value : elements) {
+            for (ModernElement<?, Canvas> value : elements.values()) {
                 Vec2i posVec = PropertyHelper.vectorOrThrow(value.position(), Vec2i.class);
                 finalCanvas.place(value.render(property, context), posVec.sub(layoutPosVec));
             }
             return finalCanvas;
+        }
+
+        public @NotNull InputHandler handler() {
+            return handler;
         }
 
     }

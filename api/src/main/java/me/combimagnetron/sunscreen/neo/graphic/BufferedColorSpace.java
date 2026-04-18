@@ -40,23 +40,42 @@ public final class BufferedColorSpace {
         return new BufferedColorSpace(Vec2i.of(width, height), tempBuffer);
     }
 
+    public @NotNull BufferedColorSpace trim() {
+        int minX = size.x(), minY = size.y(), maxX = 0, maxY = 0;
+        for (int y = 0; y < size.y(); y++) {
+            for (int x = 0; x < size.x(); x++) {
+                if (buffer[pixelIndex(x, y, size.x())] != 0) {
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                }
+            }
+        }
+        if (maxX < minX || maxY < minY) return new BufferedColorSpace(Vec2i.of(0, 0));
+        return sub(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    }
+
     public @NotNull BufferedColorSpace sub(@NotNull Vec2i position, @NotNull Vec2i size) {
         return sub(position.x(), position.y(), size.x(), size.y());
     }
 
     public @NotNull BufferedColorSpace scale(float multiplier) {
-        Vec2i scaledSize = Vec2i.of((int) (size.x() * multiplier), (int) (size.y() * multiplier));
-        int[] tempBuffer = new int[scaledSize.x() * scaledSize.y()];
-        float xRatio = (float) size.x() / scaledSize.x();
-        float yRatio = (float) size.y() / scaledSize.y();
-        for (int y = 0; y < scaledSize.y(); y++) {
-            for (int x = 0; x < scaledSize.x(); x++) {
-                int sourceX = (int) Math.min(Math.floor(x * xRatio), size.x());
-                int sourceY = (int) Math.min(Math.floor(y * xRatio), size.y());
-                tempBuffer[pixelIndex(sourceX, sourceY, scaledSize.x())] = at(sourceX, sourceY);
+        return resize(Vec2i.of((int) (size.x() * multiplier), (int) (size.y() * multiplier)));
+    }
+
+    public @NotNull BufferedColorSpace resize(@NotNull Vec2i target) {
+        int[] tempBuffer = new int[target.x() * target.y()];
+        float xRatio = (float) size.x() / target.x();
+        float yRatio = (float) size.y() / target.y();
+        for (int y = 0; y < target.y(); y++) {
+            for (int x = 0; x < target.x(); x++) {
+                int sourceX = (int) Math.min(Math.floor(x * xRatio), size.x() - 1);
+                int sourceY = (int) Math.min(Math.floor(y * yRatio), size.y() - 1);
+                tempBuffer[pixelIndex(x, y, target.x())] = at(sourceX, sourceY);
             }
         }
-        return new BufferedColorSpace(scaledSize, tempBuffer);
+        return new BufferedColorSpace(target, tempBuffer);
     }
 
     public void pixels(int[] pixels, int x, int y, int width, int height) {

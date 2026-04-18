@@ -74,9 +74,12 @@ public class ProtocolListener implements PacketListener {
     private void handleSlotChange(WrapperPlayClientHeldItemChange wrapperPlayClientSlotStateChange, SunscreenUser<?> user) {
         if (!inMenu(user)) return;
         int slot = wrapperPlayClientSlotStateChange.getSlot();
+        if (slot == 4) return;
         final Session session = user.session();
         if (session == null) return;
         session.menu().inputHandler().peek(ScrollInputContext.class, old -> old.onSlotChange(slot), user);
+        WrapperPlayServerHeldItemChange heldItemChange = new WrapperPlayServerHeldItemChange(4);
+        user.connection().send(heldItemChange);
     }
 
     private void handleNameItem(WrapperPlayClientNameItem wrapperPlayClientNameItem, SunscreenUser<?> user) {
@@ -100,6 +103,7 @@ public class ProtocolListener implements PacketListener {
         if (!inMenu(user)) return;
         final Session session = user.session();
         if (session == null) return;
+        packetReceiveEvent.setCancelled(true);
         WrapperPlayClientUseItem useItem = new WrapperPlayClientUseItem(packetReceiveEvent);
         if (useItem.getHand() != InteractionHand.MAIN_HAND) return;
         final InputHandler inputHandler = session.menu().inputHandler();
@@ -132,7 +136,6 @@ public class ProtocolListener implements PacketListener {
             World world = player.getWorld();
             Block block = world.getBlockAt(vector3i.x, vector3i.y, vector3i.z);
             if (!block.getBlockData().getMaterial().name().contains("COPPER_GRATE")) return;
-            Bukkit.broadcastMessage("je vader");
             player.playSound(new Location(player.getWorld(), vector3i.x, vector3i.y, vector3i.z), Sound.BLOCK_COPPER_GRATE_HIT, SoundCategory.BLOCKS, 1f, 1f);
         }
     }
@@ -145,6 +148,7 @@ public class ProtocolListener implements PacketListener {
         TextInputContext context = inputHandler.context(TextInputContext.class);
         if (!context.active()) return;
         inputHandler.peek(TextInputContext.class, old -> old.withActive(false), user);
+        SunscreenLibrary.library().intermediate().sendItems(user);
         Scheduler.delayTick(() -> {
             WrapperPlayServerCloseWindow closeWindow = new WrapperPlayServerCloseWindow(window.getWindowId());
             user.connection().send(closeWindow);
@@ -158,18 +162,22 @@ public class ProtocolListener implements PacketListener {
         final InputHandler inputHandler = session.menu().inputHandler();
         TextInputContext context = inputHandler.context(TextInputContext.class);
         if (!context.active()) return;
+        SunscreenLibrary.library().intermediate().sendItems(user);
         inputHandler.peek(TextInputContext.class, old -> old.withActive(false), user);
     }
 
     private void handleTimeUpdate(WrapperPlayServerTimeUpdate wrapperPlayServerTimeUpdate, SunscreenUser<?> user) {
         if (!inMenu(user)) return;
-        wrapperPlayServerTimeUpdate.setWorldAge(-2000);
+        wrapperPlayServerTimeUpdate.setWorldAge(-50);
     }
 
     private void handleBlockChange(PacketSendEvent packetSendEvent, SunscreenUser<?> user) {
         WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(packetSendEvent);
         Player player = (Player) user.platformSpecificPlayer();
-        if (!blockChange.getBlockPosition().equals(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()))) return;
+        Vector3i vector3i = blockChange.getBlockPosition();
+        Location location = player.getLocation();
+        if (vector3i.x != location.getBlockX() && vector3i.z != location.getBlockZ()) return;
+        //if (!blockChange.getBlockPosition().equals(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()))) return;
         packetSendEvent.setCancelled(true);
     }
 

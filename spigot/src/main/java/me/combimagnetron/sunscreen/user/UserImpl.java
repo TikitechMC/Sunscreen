@@ -41,17 +41,6 @@ public class UserImpl implements SunscreenUser<Player> {
         this.player = player;
         this.connection = new PacketEventsConnectionImpl<>(player);
         this.version = PacketEvents.getAPI().getPlayerManager().getUser(player).getClientVersion();
-        /*if (node == null) {
-            AspectRatioMenu menu = new AspectRatioMenu(this);
-            SunscreenLibrary.library().menuTicker().start(menu);
-            SunscreenLibrary.library().sessionHandler().session(Session.session(menu, this));
-            return;
-        }
-        if (node.value() == null) {
-            //SunscreenLibrary.library().menuTicker().start(new UserSetupMenu(this));
-            return;
-        }
-        this.screenSize = ScreenSize.fromString(node.value());*/
     }
 
     @Override

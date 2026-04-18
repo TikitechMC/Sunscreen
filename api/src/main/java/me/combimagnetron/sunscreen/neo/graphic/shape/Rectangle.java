@@ -13,7 +13,7 @@ public class Rectangle implements Shape {
         this.size = size;
         for (int y = 0; y < size.y(); y++) {
             for (int x = 0; x < size.x(); x++) {
-                shape.set(y * size.x() + x, 1);
+                shape.set(y * size.x() + x);
             }
         }
     }

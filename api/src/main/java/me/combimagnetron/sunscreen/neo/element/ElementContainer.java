@@ -13,11 +13,11 @@ public interface ElementContainer<E extends ModernElement<E, Canvas>> extends Mo
 
     @NotNull Collection<ModernElement<?, Canvas>> children();
 
-    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> add(@NotNull L elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull E add(@NotNull L elementLike);
 
-    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> add(@NotNull Iterable<@NotNull L> elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull E add(@NotNull Iterable<@NotNull L> elementLike);
 
-    <L extends ModernElement<L, Canvas>> @NotNull ElementContainer<@NotNull E> remove(@NotNull L elementLike);
+    <L extends ModernElement<L, Canvas>> @NotNull E remove(@NotNull L elementLike);
 
     @NotNull ElementContainer<@NotNull E> remove(@NotNull Identifier identifier);
 

@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 public class RadioButtonElement extends GenericInteractableModernElement<RadioButtonElement, Canvas, RadioButtonElement.RadioButtomElementListenerReferences> {
     private final RadioButtomElementListenerReferences references = new RadioButtomElementListenerReferences(this);
 
@@ -34,7 +36,17 @@ public class RadioButtonElement extends GenericInteractableModernElement<RadioBu
         return null;
     }
 
-    public record RadioButtomElementListenerReferences(@NotNull RadioButtonElement back) implements ListenerReferences<RadioButtonElement, RadioButtomElementListenerReferences> {
+    public static final class RadioButtomElementListenerReferences extends ListenerReferences<RadioButtonElement, RadioButtomElementListenerReferences> {
+        private final @NotNull RadioButtonElement back;
+
+        public RadioButtomElementListenerReferences(@NotNull RadioButtonElement back) {
+            this.back = back;
+        }
+
+        @Override
+        public @NotNull RadioButtonElement back() {
+            return back;
+        }
 
     }
 

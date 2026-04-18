@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import team.unnamed.creative.ResourcePack;
 import team.unnamed.creative.font.BitMapFontProvider;
 import team.unnamed.creative.font.Font;
+import team.unnamed.creative.font.TrueTypeFontProvider;
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackReader;
 import team.unnamed.creative.texture.Texture;
 
@@ -36,6 +37,7 @@ public class ResourcePackDownloader {
         } catch (IOException | URISyntaxException e) {
             return;
         }
+        //todo: download and cache all textures with a texture finder ingame in the editor for every texture support.
         Path unzipped = ZipHelper.unzip(CACHE);
         ResourcePack pack = MinecraftResourcePackReader.minecraft().readFromDirectory(unzipped.toFile());
         for (Font font : pack.fonts()) {
@@ -65,6 +67,10 @@ public class ResourcePackDownloader {
                     y = 0;
                 }
                 Registries.register(Registries.FONTS, atlasFont);
+            }
+            for (TrueTypeFontProvider provider : font.providers().stream()
+                .filter(provider -> provider instanceof TrueTypeFontProvider)
+                .map(provider -> (TrueTypeFontProvider) provider).toList()) {
             }
         }
     }

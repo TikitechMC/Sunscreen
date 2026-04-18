@@ -145,6 +145,10 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
         return this;
     }
 
+    public @NotNull Canvas trim() {
+        return new Canvas(bufferedColorSpace.trim());
+    }
+
     public @NotNull Canvas erase(@NotNull Vec2i position) {
         bufferedColorSpace.erase(position);
         return this;

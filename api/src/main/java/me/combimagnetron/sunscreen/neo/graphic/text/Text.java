@@ -24,6 +24,14 @@ public sealed interface Text extends Renderable<Size, Canvas> permits TextImpl {
         return Adventure2NativeTransformer.adventure(component);
     }
 
+    static @NotNull Text vanilla(@NotNull String content) {
+        return Text.basic(content).font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2));
+    }
+
+    static @NotNull Text small(@NotNull String content) {
+        return Text.basic(content).font(Registries.fonts().get(Identifier.of("sunscreen", "font/sunburned"))).fontProperties(FontProperties.properties().baseline(-6));
+    }
+
     static @NotNull Text keybind(@NotNull Keybind keybind) {
         return TextImpl.basic(keybind.toString());
     }

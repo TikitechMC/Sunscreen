@@ -20,21 +20,6 @@ public class UserManager implements Listener, UserHandler<Player, SunscreenUser<
 
     public UserManager(SunscreenPlugin library) {
         Bukkit.getServer().getPluginManager().registerEvents(this, library);
-        checkFile(library);
-    }
-
-    private void checkFile(SunscreenPlugin library) {
-        File file = new File(library.getDataFolder(), "data.dt");
-        if (file.exists()) {
-            return;
-        }
-        try {
-            if (!file.createNewFile()) {
-                throw new IOException("Failed to create file");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @EventHandler

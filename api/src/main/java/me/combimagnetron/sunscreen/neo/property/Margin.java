@@ -18,7 +18,7 @@ public class Margin extends RelativeMeasure.Vec4iRelativeMeasureGroup<Margin> im
     }
 
     public Margin(@NotNull RelativeMeasure.Vec4iRelativeMeasureGroup<?> measureGroup) {
-        //axisMap.putAll((Map<? extends RelativeMeasure.Axis4d, ? extends Vec4iRelativeBuilder<Margin>>) measureGroup.axisBuilderMap());
+        axisMap.putAll((Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<Margin>>) (Map<?, ?>) measureGroup.axisBuilderMap());
     }
 
     public static <C> @NotNull Margin relative(RelativeMeasure.Vec4iRelativeMeasureGroup<@NotNull C> measureGroup) {
@@ -49,6 +49,11 @@ public class Margin extends RelativeMeasure.Vec4iRelativeMeasureGroup<Margin> im
     @Override
     public @NotNull PropertyHandler<@NotNull Margin> handler() {
         return PROPERTY_HANDLER;
+    }
+
+    @Override
+    public Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec4iRelativeMeasureGroup<Margin>>> axisBuilderMap() {
+        return (Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec4iRelativeMeasureGroup<Margin>>>) (Map<?, ?>) axisMap;
     }
 
     @Override

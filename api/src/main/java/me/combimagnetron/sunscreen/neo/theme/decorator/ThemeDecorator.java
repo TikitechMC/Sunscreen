@@ -74,6 +74,11 @@ public sealed interface ThemeDecorator extends Renderable<Size, Canvas> permits 
             return this;
         }
 
+        public @NotNull StateNineSliceThemeDecorator disabled(@NotNull Canvas canvas) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.DISABLED, NineSlice.nineSlice(canvas));
+            return this;
+        }
+
         public @NotNull StateNineSliceThemeDecorator standard(@NotNull NineSlice slice) {
             nineSlices.put(GenericInteractableModernElement.ElementPhase.DEFAULT, slice);
             return this;
@@ -86,6 +91,11 @@ public sealed interface ThemeDecorator extends Renderable<Size, Canvas> permits 
 
         public @NotNull StateNineSliceThemeDecorator hovered(@NotNull NineSlice slice) {
             nineSlices.put(GenericInteractableModernElement.ElementPhase.HOVER, slice);
+            return this;
+        }
+
+        public @NotNull StateNineSliceThemeDecorator disabled(@NotNull NineSlice slice) {
+            nineSlices.put(GenericInteractableModernElement.ElementPhase.DISABLED, slice);
             return this;
         }
 

@@ -33,6 +33,11 @@ public final class MenuRoot implements RootLike<MenuRoot> {
         return this;
     }
 
+    public void clear() {
+        elementLikes.clear();
+        menuComponents.clear();
+    }
+
     public @NotNull MenuRoot page(@NotNull Page page) {
         return this;
     }

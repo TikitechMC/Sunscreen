@@ -81,6 +81,10 @@ public final class RenderPipeline {
         }
     }
 
+    public RenderContext context() {
+        return context;
+    }
+
     public void submitForRemoval(@NotNull Identifier identifier) {
         remove.add(identifier);
     }

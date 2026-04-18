@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class FontRendererHelper {
-    private final static String characterRange = " _:/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    private final static String characterRange = " -_:\"/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
 
     private FontRendererHelper() {}
 

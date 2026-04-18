@@ -24,8 +24,12 @@ public class FrameElement extends GenericModernElement<FrameElement, Canvas> {
     public @NonNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
         final Vec2i sizeVec = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
         if (context == null) return Canvas.error(size());
-        final ModernTheme theme = context.theme();
-        final ColorScheme scheme = theme.colorScheme();
+        //final ModernTheme theme = context.theme();
+        //final ColorScheme scheme = theme.colorScheme();
+        return frame(sizeVec);
+    }
+
+    public static @NotNull Canvas frame(@NotNull Vec2i sizeVec) {
         Color outsideFrameColor = Color.of(27, 27,27);//scheme.accent();
         Color backgroundFrameColor = Color.of(13, 13, 13);//scheme.background();
         Canvas canvas = Canvas.empty(sizeVec);

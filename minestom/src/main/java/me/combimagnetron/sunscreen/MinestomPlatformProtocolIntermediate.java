@@ -2,6 +2,7 @@ package me.combimagnetron.sunscreen;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import me.combimagnetron.passport.internal.entity.impl.tile.ItemFrame;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
@@ -31,10 +32,7 @@ import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MinestomPlatformProtocolIntermediate implements PlatformProtocolIntermediate {
     private final static AttributeModifier ATTRIBUTE_MODIFIER = new AttributeModifier(Key.key("sunscreen:attribute"), 0, AttributeOperation.ADD_MULTIPLIED_BASE);
@@ -87,12 +85,14 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
             itemFrameMeta.setItem(itemStack);
             itemFrameMeta.setDirection(Direction.DOWN);
         });
-        entities.put(player.getUuid(), upperFrame.getEntityId(), EntityType.ITEM_FRAME);
-        entities.put(player.getUuid(), lowerFrame.getEntityId(), EntityType.ITEM_FRAME);
+        int upperId = mapId;
+        int lowerId = Integer.MIN_VALUE + mapId;
+        entities.put(player.getUuid(), upperId, EntityType.ITEM_FRAME);
+        entities.put(player.getUuid(), lowerId, EntityType.ITEM_FRAME);
         final Pos pos = toMinestom(user.position()).add(0, 1, 0);
-        SpawnEntityPacket spawnEntityPacketUpper = new SpawnEntityPacket(upperFrame.getEntityId(), upperFrame.getUuid(), upperFrame.getEntityType(), pos, pos.yaw(), 0, Vec.ZERO);
-        SpawnEntityPacket spawnEntityPacketLower = new SpawnEntityPacket(lowerFrame.getEntityId(), lowerFrame.getUuid(), lowerFrame.getEntityType(), pos, pos.yaw(), 0, Vec.ZERO);
-        player.getPlayerConnection().sendPackets(mapDataPacket, spawnEntityPacketUpper, spawnEntityPacketLower, upperFrame.getMetadataPacket(), lowerFrame.getMetadataPacket());
+        SpawnEntityPacket spawnEntityPacketUpper = new SpawnEntityPacket(upperId, upperFrame.getUuid(), upperFrame.getEntityType(), pos, pos.yaw(), 0, Vec.ZERO);
+        SpawnEntityPacket spawnEntityPacketLower = new SpawnEntityPacket(lowerId, lowerFrame.getUuid(), lowerFrame.getEntityType(), pos, pos.yaw(), 0, Vec.ZERO);
+        player.getPlayerConnection().sendPackets(mapDataPacket, spawnEntityPacketUpper, spawnEntityPacketLower, new EntityMetaDataPacket(upperId, upperFrame.getMetadataPacket().entries()), new EntityMetaDataPacket(lowerId, lowerFrame.getMetadataPacket().entries()));
         return null;
     }
 
@@ -108,12 +108,13 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
         player.setInvisible(true);
         EntityEffectPacket entityEffectPacket = new EntityEffectPacket(player.getEntityId(), new Potion(PotionEffect.INVISIBILITY, 1, -1, ((byte) 0)));
         PlayerInfoUpdatePacket playerInfoUpdatePacket = new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.ADD_PLAYER, new PlayerInfoUpdatePacket.Entry(uuid, player.getUsername(), properties, false, 0, GameMode.CREATIVE, null, null, 0, true));
+        EntityMetaDataPacket metaDataPacket = new EntityMetaDataPacket(-10_000, Map.of(16, Metadata.Byte((byte) 127)));
         SpawnEntityPacket spawnEntityPacket = new SpawnEntityPacket(-10_000, uuid, EntityType.PLAYER, toMinestom(user.position()), player.getPosition().yaw(), 0, Vec.ZERO);
         EntityRotationPacket entityRotationPacket = new EntityRotationPacket(-10_000, player.getPosition().yaw(), player.getPosition().pitch(), player.isOnGround());
         CameraPacket cameraPacket = new CameraPacket(-10_000);
-        BlockChangePacket blockChangePacket = new BlockChangePacket(toMinestom(user.position()).add(0, 1, 0), Block.BARRIER);
+        BlockChangePacket blockChangePacket = new BlockChangePacket(toMinestom(user.position()).add(0, 1, 0), Block.WEATHERED_COPPER_GRATE);
         ChangeGameStatePacket changeGameStatePacket = new ChangeGameStatePacket(ChangeGameStatePacket.Reason.CHANGE_GAMEMODE, 0);
-        player.getPlayerConnection().sendPackets(entityEffectPacket, playerInfoUpdatePacket, spawnEntityPacket, entityRotationPacket, cameraPacket, blockChangePacket, changeGameStatePacket);
+        player.getPlayerConnection().sendPackets(entityEffectPacket, playerInfoUpdatePacket, spawnEntityPacket, metaDataPacket, entityRotationPacket, cameraPacket, blockChangePacket, changeGameStatePacket);
         return null;
     }
 
@@ -158,6 +159,7 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
         BlockChangePacket blockChangePacket = new BlockChangePacket(toMinestom(user.position()).add(0, 1, 0), Block.AIR);
         RemoveEntityEffectPacket removeEntityEffectPacket = new RemoveEntityEffectPacket(player.getEntityId(), PotionEffect.INVISIBILITY);
         player.refreshPosition(player.getPosition());
+        user.resendInv();
         playerConnection.sendPackets(destroyEntitiesPacket, playerPositionAndLookPacket, timeUpdate, gameState, camera, blockChangePacket, removeEntityEffectPacket);
     }
 
@@ -170,15 +172,41 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
 
     @Override
     public void bundleDelimiter(@NotNull SunscreenUser<?> user) {
-
+        BundlePacket bundlePacket = new BundlePacket();
+        final Player player = player(user);
+        player.getPlayerConnection().sendPacket(bundlePacket);
     }
 
     @Override
     public void openEmptyAnvil(SunscreenUser<?> user) {
         final Player player = (Player) user.platformSpecificPlayer();
-        AnvilInventory anvilInventory = new AnvilInventory("");
-        anvilInventory.addItemStack(ItemStack.of(Material.PAPER).with(DataComponents.CUSTOM_NAME, Component.empty()).with(DataComponents.ITEM_MODEL, "minecraft:air"));
-        player.openInventory(anvilInventory);
+        OpenWindowPacket openWindowPacket = new OpenWindowPacket(-10_000, 8, Component.empty());
+        ItemStack stack = ItemStack.of(Material.PAPER).with(DataComponents.CUSTOM_NAME, Component.empty()).with(DataComponents.ITEM_MODEL, "minecraft:air");
+        ArrayList<ItemStack> items = new ArrayList<>(
+            List.of(stack)
+        );
+        items.addAll(Collections.nCopies(38, ItemStack.AIR));
+        WindowItemsPacket windowItemsPacket = new WindowItemsPacket(-10_000, 0, items, ItemStack.AIR);
+        player.sendPackets(openWindowPacket, windowItemsPacket);
+    }
+
+    @Override
+    public void sendItems(@NotNull SunscreenUser<?> user) {
+        ItemStack stack = ItemStack.of(Material.TRIDENT).with(DataComponents.ITEM_MODEL, "air").with(DataComponents.CUSTOM_NAME, Component.empty());
+        WindowItemsPacket itemsPacket = new WindowItemsPacket(0, 0, Collections.nCopies(45, stack), stack);
+        player(user).getPlayerConnection().sendPacket(itemsPacket);
+    }
+
+    @Override
+    public void removeMaps(@NotNull SunscreenUser<?> user) {
+        final Map<Integer, Object> trackedEntities = entities.row(user.uniqueIdentifier());
+        final List<Integer> ids = trackedEntities.entrySet().stream().filter(entity -> entity.getValue() instanceof ItemFrame).map(Map.Entry::getKey).mapToInt(Integer::intValue).boxed().toList();
+        for (int id : ids) {
+            trackedEntities.remove(id);
+        }
+        if (!ids.isEmpty()) {
+            player(user).getPlayerConnection().sendPacket(new DestroyEntitiesPacket(ids));
+        }
     }
 
     private Player player(SunscreenUser<?> user) {

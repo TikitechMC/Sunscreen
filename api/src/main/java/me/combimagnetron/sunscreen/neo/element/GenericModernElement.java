@@ -39,4 +39,8 @@ public abstract class GenericModernElement<E extends ModernElement<E, G>, G exte
         return propertyMap.values();
     }
 
+    public @NotNull PropertyMap propertyMap() {
+        return propertyMap;
+    }
+
 }

@@ -1,5 +1,5 @@
 [versions]
-lamp = "4.0.0-rc.14"
+lamp = "4.0.0-rc.16"
 adventure = "4.25.0"
 packetevents = "2.11.2"
 jackson = "2.20.1"
@@ -45,7 +45,7 @@ build-system-license = { group = "com.github.hierynomus.license", name = "com.gi
 build-system-license-base = { group = "com.github.hierynomus.license-base", name = "com.github.hierynomus.license-base.gradle.plugin", version = "0.16.1" }
 
 [bundles]
-minecraft = ["lamp-common", "creative-api", "creative-serializer-minecraft"]
+minecraft = ["creative-api", "creative-serializer-minecraft"]
 adventure = ["adventure-api", "adventure-gson", "adventure-plain"]
 utils = ["guava", "commons3", "commons-io", "caffeine", "fastutil", "jackson", "commons-compress", "jackson-xml", "annotations", "okhttp"]
 lamp-command = ["lamp-common", "lamp-paper", "lamp-minestom"]

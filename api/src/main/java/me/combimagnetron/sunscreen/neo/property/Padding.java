@@ -26,7 +26,7 @@ public class Padding extends RelativeMeasure.Vec4iRelativeMeasureGroup<Padding> 
     }
 
     public Padding(@NotNull RelativeMeasure.Vec4iRelativeMeasureGroup<?> measureGroup) {
-        //axisMap.putAll((Map<? extends RelativeMeasure.Axis4d, ? extends Vec4iRelativeBuilder<Padding>>) measureGroup.axisBuilderMap());
+        axisMap.putAll((Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<Padding>>) (Map<?, ?>) measureGroup.axisBuilderMap());
     }
 
     public static <C> @NotNull Padding relative(RelativeMeasure.Vec4iRelativeMeasureGroup<C> measureGroup) {
@@ -62,6 +62,11 @@ public class Padding extends RelativeMeasure.Vec4iRelativeMeasureGroup<Padding> 
     @Override
     public void finish(@NotNull Viewport viewport) {
 
+    }
+
+    @Override
+    public Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec4iRelativeMeasureGroup<Padding>>> axisBuilderMap() {
+        return (Map<RelativeMeasure.Axis4d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec4iRelativeMeasureGroup<Padding>>>) (Map<?, ?>) axisMap;
     }
 
     public static class PropertyHandlerImpl implements PropertyHandler<Padding> {

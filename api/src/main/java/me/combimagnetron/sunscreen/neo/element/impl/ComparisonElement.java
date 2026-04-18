@@ -7,13 +7,10 @@ import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
-import me.combimagnetron.sunscreen.neo.graphic.text.Text;
-import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
 import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
-import me.combimagnetron.sunscreen.neo.registry.Registries;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.util.helper.HoverHelper;
 import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
@@ -21,8 +18,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-public class ComparisonElement extends GenericInteractableModernElement<ComparisonElement, Canvas, ComparisonElement.PaddingMarginElementListenerReferences> {
-    private final PaddingMarginElementListenerReferences references = new PaddingMarginElementListenerReferences(this);
+import java.util.Objects;
+
+public class ComparisonElement extends GenericInteractableModernElement<ComparisonElement, Canvas, ComparisonElement.ComparisonElementListenerReferences> {
+    private final ComparisonElementListenerReferences references = new ComparisonElementListenerReferences(this);
     private CursorStyle style = CursorStyle.pointer();
     private Canvas left;
     private Canvas right;
@@ -53,7 +52,8 @@ public class ComparisonElement extends GenericInteractableModernElement<Comparis
         super.lateInit();
         InputHandler handler = inputHandler();
         if (handler == null) return;
-        handler.subscribe(MouseInputContext.class, this::handleCursor);
+        references.subscribe(handler);
+        handler.subscribe(identifier(), MouseInputContext.class, this::handleCursor);
     }
 
     private void handleCursor(@NotNull UserMoveStateChangeEvent event) {
@@ -87,7 +87,7 @@ public class ComparisonElement extends GenericInteractableModernElement<Comparis
     }
 
     @Override
-    public @NonNull PaddingMarginElementListenerReferences listen() {
+    public @NotNull ComparisonElement.ComparisonElementListenerReferences listen() {
         return references;
     }
 
@@ -106,8 +106,17 @@ public class ComparisonElement extends GenericInteractableModernElement<Comparis
         return canvas;
     }
 
-    public record PaddingMarginElementListenerReferences(
-        ComparisonElement back) implements ListenerReferences<ComparisonElement, PaddingMarginElementListenerReferences> {
+    public static final class ComparisonElementListenerReferences extends ListenerReferences<ComparisonElement, ComparisonElementListenerReferences> {
+        private final ComparisonElement back;
+
+        public ComparisonElementListenerReferences(ComparisonElement back) {
+            this.back = back;
+        }
+
+        @Override
+        public ComparisonElement back() {
+            return back;
+        }
 
     }
 

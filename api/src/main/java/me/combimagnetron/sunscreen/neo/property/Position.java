@@ -1,5 +1,7 @@
 package me.combimagnetron.sunscreen.neo.property;
 
+import me.combimagnetron.sunscreen.neo.editor.input.SelectorInputContext;
+import me.combimagnetron.sunscreen.neo.editor.property.EditorProperty;
 import me.combimagnetron.sunscreen.neo.property.handler.PropertyHandler;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
@@ -9,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Position> implements Property<Vec2i, Position> {
+public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Position> implements EditorProperty<Vec2i, Position, SelectorInputContext.ValueInnerContext> {
     private static final PropertyHandler<Position> PROPERTY_HANDLER = (element, context, position) -> null;
     private static final Position ZERO = Position.fixed(Vec2i.zero());
 
@@ -55,6 +57,11 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
     }
 
     @Override
+    public Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec2iRelativeMeasureGroup<Position>>> axisBuilderMap() {
+        return (Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec2iRelativeMeasureGroup<Position>>>) (Map<?, ?>) axisMap;
+    }
+
+    @Override
     public void finish(@NotNull Viewport viewport) {
         Vec2i view = viewport.currentView();
         int x = axisMap.get(RelativeMeasure.Axis2d.X).finish(view.x());
@@ -63,5 +70,11 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
     }
 
 
+    @Override
+    public @NotNull Position apply(@NotNull SelectorInputContext.ValueInnerContext innerContext) {
+        Integer[] values = innerContext.values();
+        this.vec2i = Vec2i.of(values[0], values[1]);
+        return this;
+    }
 
 }

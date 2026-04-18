@@ -55,6 +55,11 @@ public class Size extends RelativeMeasure.Vec2iRelativeMeasureGroup<Size> implem
         vec2i = Vec2i.of(x, y);
     }
 
+    @Override
+    public Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec2iRelativeMeasureGroup<Size>>> axisBuilderMap() {
+        return (Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<RelativeMeasure.Vec2iRelativeMeasureGroup<Size>>>) (Map<?, ?>) axisMap;
+    }
+
     public static class Fit extends Size implements FitToContent<Size> {
 
         public Fit() {

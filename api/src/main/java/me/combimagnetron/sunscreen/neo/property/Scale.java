@@ -21,20 +21,21 @@ public class Scale extends RelativeMeasure.DoubleRelativeMeasureGroup<Scale> imp
     private static final Scale DEFAULT = Scale.fixed(1.56f);
     private static final PropertyHandler<Scale> HANDLER = (element, context, scale) -> null;
     private boolean lossless = true;
+    private RelativeMeasure.RelativeBuilder<?> builder;
 
     public Scale(double value) {
         super(value);
     }
 
-    public Scale(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<Scale> measureGroup) {
-
+    public Scale(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<?> measureGroup) {
+        this.builder = measureGroup.set();
     }
 
     public static @NotNull Scale fixed(double value) {
         return new Scale(value);
     }
 
-    public static @NotNull Scale relative(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<Scale> measureGroup) {
+    public static @NotNull Scale relative(@NotNull RelativeMeasure.DoubleRelativeMeasureGroup<?> measureGroup) {
         return new Scale(measureGroup);
     }
 
@@ -53,6 +54,11 @@ public class Scale extends RelativeMeasure.DoubleRelativeMeasureGroup<Scale> imp
     public Scale lossless(boolean lossless) {
         this.lossless = lossless;
         return this;
+    }
+
+    @Override
+    public RelativeMeasure.@NotNull RelativeBuilder<RelativeMeasure.DoubleRelativeMeasureGroup<Scale>> set() {
+        return (RelativeMeasure.RelativeBuilder<RelativeMeasure.DoubleRelativeMeasureGroup<Scale>>) (Object) builder;
     }
 
     @Override
@@ -97,6 +103,11 @@ public class Scale extends RelativeMeasure.DoubleRelativeMeasureGroup<Scale> imp
             return null;
         }
 
+    }
+
+    @Override
+    public Double value() {
+        return builder != null ? null : value;
     }
 
     public static class Fit extends Scale implements FitToContent<Scale> {

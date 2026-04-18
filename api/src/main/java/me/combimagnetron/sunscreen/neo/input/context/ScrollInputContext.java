@@ -13,14 +13,12 @@ public record ScrollInputContext(boolean active, float value, int lastSlot) impl
     }
 
     public @NotNull ScrollInputContext onSlotChange(int newSlot) {
-        int raw = newSlot - lastSlot;
-        int delta = Math.abs(raw) > HOTBAR_SIZE / 2
-            ? (raw > 0 ? raw - HOTBAR_SIZE : raw + HOTBAR_SIZE)
-            : raw;
-
-        if (delta == 0) return this;
-
-        return new ScrollInputContext(true, Math.signum(delta), newSlot);
+        boolean forwards = newSlot == (lastSlot + 1) % 9;
+        boolean backwards = newSlot == (lastSlot + 8) % 9;
+        if (!forwards && !backwards) {
+            return this;
+        }
+        return new ScrollInputContext(true, forwards ? 1 : -1, newSlot);
     }
 
     @Override

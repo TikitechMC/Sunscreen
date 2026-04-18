@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -31,6 +32,10 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
         return new DummyVec4iRelativeMeasureGroup<>();
     }
 
+    static <C> @NotNull DoubleRelativeMeasureGroup<@NotNull C> single() {
+        return new DummyDoubleRelativeMeasureGroup<>();
+    }
+
     final class DummyVec2iRelativeMeasureGroup<C> extends Vec2iRelativeMeasureGroup<@NotNull C> {
         @Override
         public void finish(@NotNull Viewport unused) {}
@@ -39,6 +44,11 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
     final class DummyVec4iRelativeMeasureGroup<C> extends Vec4iRelativeMeasureGroup<@NotNull C> {
         @Override
         public void finish(@NotNull Viewport unused) {}
+    }
+
+    final class DummyDoubleRelativeMeasureGroup<C> extends DoubleRelativeMeasureGroup<@NotNull C> {
+        @Override
+        public void finish(@NotNull Viewport screenSize) {}
     }
 
     interface RelativeMeasureGroup<K> {
@@ -53,7 +63,7 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
         private final Collection<OffsetType> offsetTypes = new ArrayList<>();
         private final G parent;
 
-        private RelativeBuilder(G parent) {
+        public RelativeBuilder(G parent) {
             this.parent = parent;
         }
 
@@ -82,6 +92,10 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
             return finished;
         }
 
+        public @NotNull Collection<OffsetType> offsetTypes() {
+            return offsetTypes;
+        }
+
         static <G> @NotNull RelativeBuilder<G> of(G parent) {
             return new RelativeBuilder<>(parent);
         }
@@ -89,10 +103,10 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
     }
 
     abstract class Vec2iRelativeMeasureGroup<C> implements RelativeMeasureGroup<Vec2i> {
-        private final Map<Axis2d, RelativeBuilder<Vec2iRelativeMeasureGroup<C>>> axisBuilderMap = Map.of(
+        private final Map<Axis2d, RelativeBuilder<Vec2iRelativeMeasureGroup<C>>> axisBuilderMap = new HashMap<>(Map.of(
             Axis2d.X, RelativeBuilder.of(this),
             Axis2d.Y, RelativeBuilder.of(this)
-        );
+        ));
         protected Vec2i vec2i;
         protected Supplier<Vec2i> supplier;
 
@@ -129,12 +143,12 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
     }
 
     abstract class Vec4iRelativeMeasureGroup<C> implements RelativeMeasureGroup<Vec4i> {
-        private final Map<Axis4d, RelativeBuilder<Vec4iRelativeMeasureGroup<C>>> axisBuilderMap = Map.of(
+        private final Map<Axis4d, RelativeBuilder<Vec4iRelativeMeasureGroup<C>>> axisBuilderMap = new HashMap<>(Map.of(
             Axis4d.UP, RelativeBuilder.of(this),
             Axis4d.DOWN, RelativeBuilder.of(this),
             Axis4d.LEFT, RelativeBuilder.of(this),
             Axis4d.RIGHT, RelativeBuilder.of(this)
-        );
+        ));
         protected Vec4i vec4i;
 
         public Vec4iRelativeMeasureGroup(@NotNull Vec4i vec4i) {
@@ -163,6 +177,10 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
 
         public @Nullable Vec4i value() {
             return vec4i;
+        }
+
+        public Map<Axis4d, RelativeBuilder<Vec4iRelativeMeasureGroup<C>>> axisBuilderMap() {
+            return axisBuilderMap;
         }
 
         public abstract void finish(@NotNull Viewport screenSize);
@@ -194,14 +212,21 @@ public interface RelativeMeasure<C, K, I, B extends RuntimeDefinable.Builder<?, 
     }
 
     enum Axis2d {
-        X, Y
+        X("x"), Y("y");
+
+        private final String label;
+
+        Axis2d(String label) {
+            this.label = label;
+        }
+
     }
 
     enum Axis4d {
         UP, DOWN, LEFT, RIGHT
     }
 
-    interface OffsetType {
+    sealed interface OffsetType {
 
         int value(int input);
 

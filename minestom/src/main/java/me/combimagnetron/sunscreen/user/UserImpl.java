@@ -5,6 +5,7 @@ import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.internal.network.Connection;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
+import me.combimagnetron.sunscreen.neo.ActiveMenu;
 import me.combimagnetron.sunscreen.neo.MenuTemplate;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.neo.render.ScreenInfo;
@@ -41,7 +42,17 @@ public class UserImpl implements SunscreenUser<Player> {
 
     @Override
     public @NotNull Session open(@NotNull MenuTemplate template) {
-        return null;
+        final Session current = this.session();
+        if (current != null) {
+            current.menu().close();
+        }
+
+        new ActiveMenu(template, this, template.identifier());
+        final Session created = this.session();
+        if (created == null) {
+            throw new IllegalStateException("Failed to create menu session for " + this.uniqueIdentifier());
+        }
+        return created;
     }
 
     @Override

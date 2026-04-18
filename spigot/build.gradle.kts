@@ -21,6 +21,12 @@ repositories {
     maven("https://repo.nexomc.com/releases")
 }
 
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor(0, "seconds")
+    }
+}
+
 tasks {
     runServer {
         minecraftVersion("1.21.11")
@@ -29,6 +35,7 @@ tasks {
             //github("retrooper", "packetevents", "v2.11.1", "packetevents-spigot-2.11.1.jar")
             hangar("PlaceholderAPI", "2.11.6")
         }
+        serverJar(kotlin.io.path.Path("paper-1.21.11-127.jar").toFile())
     }
 
     build {

@@ -1,7 +1,6 @@
 package me.combimagnetron.sunscreen.neo.element.impl;
 
 import me.combimagnetron.passport.event.Dispatcher;
-import me.combimagnetron.passport.event.EventBus;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.cursor.CursorStyle;
@@ -9,12 +8,15 @@ import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.event.UserClickElementEvent;
 import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
-import me.combimagnetron.sunscreen.neo.graphic.modifier.GraphicModifiers;
-import me.combimagnetron.sunscreen.neo.graphic.modifier.ModifierContext;
-import me.combimagnetron.sunscreen.neo.graphic.shape.Shape;
+import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
+import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
 import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
+import me.combimagnetron.sunscreen.neo.input.base.Action;
+import me.combimagnetron.sunscreen.neo.input.base.Module;
+import me.combimagnetron.sunscreen.neo.input.base.MouseInputBase;
+import me.combimagnetron.sunscreen.neo.input.base.impl.Modules;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.property.Visibility;
@@ -29,7 +31,7 @@ import java.util.function.Consumer;
 
 public class ButtonElement extends GenericInteractableModernElement<ButtonElement, Canvas, ButtonElement.ButtonElementListenerReferences> {
     private final ButtonElementListenerReferences references = new ButtonElementListenerReferences(this);
-    private final Text text;
+    private Text text;
     private ElementPhase phase = ElementPhase.DEFAULT;
     private int click = 0;
     private Vec2i textPosition = Vec2i.zero();
@@ -42,15 +44,29 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     public ButtonElement(@NotNull Identifier identifier, @Nullable Text label, @Nullable Vec2i textPosition) {
         super(identifier);
         text = label;
-        if (textPosition != null) this.textPosition = textPosition;
+        if (textPosition != null)
+            this.textPosition = textPosition;
     }
 
     @Override
     protected void lateInit() {
         super.lateInit();
         InputHandler handler = inputHandler();
-        if (handler == null) return;
-        handler.subscribe(MouseInputContext.class, this::handleCursor);
+        if (handler == null)
+            return;
+        references.subscribe(handler);
+        handler.subscribe(identifier(), MouseInputContext.class, this::handleCursor);
+        Vec2i size = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
+    }
+
+    public @NotNull ButtonElement text(@Nullable Text text) {
+        this.text = text;
+        return this;
+    }
+
+    public @NotNull ButtonElement textPosition(@Nullable Vec2i position) {
+        this.textPosition = position;
+        return this;
     }
 
     public @NotNull ButtonElement canvas(@Nullable Canvas canvas) {
@@ -59,27 +75,47 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     }
 
     private void handleCursor(@NotNull UserMoveStateChangeEvent event) {
-        if (event.user() != inputHandler().user()) return;
+        if (event.user() != inputHandler().user())
+            return;
         final MouseInputContext context = event.context();
         Vec2i cursor = context.position();
-        Visibility visibility = visibility();
-        if (visibility.hide()) return;
         boolean hover = HoverHelper.in(this, cursor);
-        if (hover && context.leftPressed()) click = 6;
+        if (hover && context.leftPressed())
+            click = 3;
         InputHandler handler = inputHandler();
+        if (phase == ElementPhase.DISABLED) return;
         if (!hover && phase != ElementPhase.DEFAULT) {
             phase = ElementPhase.DEFAULT;
             handler.cursor(CursorStyle.pointer());
             return;
         }
+        Visibility visibility = visibility();
+        if (visibility.hide())
+            return;
+        if (click == 1) {
+            Dispatcher.dispatcher()
+                    .post(new UserClickElementEvent<>(event.user(), this, cursor.sub(position().value())));
+        }
         if (click > 0) {
             click -= 1;
             phase = ElementPhase.CLICK;
-            Dispatcher.dispatcher().post(new UserClickElementEvent<>(event.user(), this, cursor.sub(position().value())));
         } else if (hover) {
             phase = ElementPhase.HOVER;
             handler.cursor(CursorStyle.click());
         }
+    }
+
+    public @NotNull ButtonElement disabled(boolean disabled) {
+        this.phase = disabled ? ElementPhase.DISABLED : ElementPhase.DEFAULT;
+        return this;
+    }
+
+    public @NotNull ButtonElement disable() {
+        return disabled(true);
+    }
+
+    public @NotNull ButtonElement enable() {
+        return disabled(false);
     }
 
     @Override
@@ -90,9 +126,11 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     @Override
     public @NotNull Canvas render(@NotNull Size property, @Nullable RenderContext context) {
         Size size = size();
-        if (context == null) return Canvas.error(size);
+        if (context == null)
+            return Canvas.error(size);
         ThemeDecorator themeDecorator = context.decorator(this);
-        if (!(themeDecorator instanceof ThemeDecorator.StateNineSliceThemeDecorator decorator)) return Canvas.error(size);
+        if (!(themeDecorator instanceof ThemeDecorator.StateNineSliceThemeDecorator decorator))
+            return Canvas.error(size);
         Vec2i sizeVec = PropertyHelper.vectorOrThrow(size, Vec2i.class);
         Canvas button = Canvas.empty(sizeVec);
         if (canvas != null) {
@@ -101,13 +139,22 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
             button = decorator.render(size, context, phase);
         }
         if (text != null) {
-            button.place(text.render(size, context), textPosition);
+            Text buttonText = text;
+            if (phase == ElementPhase.DISABLED) buttonText.color(TextColor.color(Color.of(93, 93, 93)));
+            else buttonText.color(TextColor.color(Color.of(255, 255, 255)));
+            button.place(buttonText.render(size, context), textPosition);
         }
-        button.modifier(GraphicModifiers.mask(Shape.rectangle(Vec2i.of(20, 20)), ModifierContext.of()));
+        // button.modifier(GraphicModifiers.mask(Shape.rectangle(Vec2i.of(20, 20)),
+        // ModifierContext.of()));
         return button;
     }
 
-    public record ButtonElementListenerReferences(ButtonElement buttonElement) implements ListenerReferences<ButtonElement, ButtonElementListenerReferences> {
+    public static final class ButtonElementListenerReferences extends ListenerReferences<ButtonElement, ButtonElementListenerReferences> {
+        private final ButtonElement buttonElement;
+
+        public ButtonElementListenerReferences(ButtonElement buttonElement) {
+            this.buttonElement = buttonElement;
+        }
 
         @Override
         public @NotNull ButtonElement back() {
@@ -115,8 +162,8 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         }
 
         @SuppressWarnings("unchecked")
-        public @NotNull ButtonElementListenerReferences click(@NotNull Consumer<UserClickElementEvent<ButtonElement>> eventConsumer) {
-            EventBus.subscribe(UserClickElementEvent.class, (Consumer) eventConsumer);
+        public @NotNull ButtonElementListenerReferences click(@NotNull Consumer<UserClickElementEvent<?>> eventConsumer) {
+            put(UserClickElementEvent.class, eventConsumer);
             return this;
         }
 

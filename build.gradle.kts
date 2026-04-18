@@ -34,6 +34,7 @@ allprojects {
         } else {
             compileOnly(libs().bundles.utils)
         }
+        implementation(libs().bundles.lamp.command)
         implementation(libs().bundles.minecraft)
         implementation(libs().passport)
     }

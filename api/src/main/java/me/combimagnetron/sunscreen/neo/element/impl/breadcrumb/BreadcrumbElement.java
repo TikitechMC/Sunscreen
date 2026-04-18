@@ -10,6 +10,8 @@ import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 public class BreadcrumbElement extends GenericInteractableModernElement<BreadcrumbElement, Canvas, BreadcrumbElement.BreadcrumbElementListenerReferences> {
     private final BreadcrumbElementListenerReferences references = new BreadcrumbElementListenerReferences(this);
 
@@ -27,8 +29,12 @@ public class BreadcrumbElement extends GenericInteractableModernElement<Breadcru
         return null;
     }
 
-    public record BreadcrumbElementListenerReferences(
-            BreadcrumbElement parent) implements ListenerReferences<BreadcrumbElement, BreadcrumbElementListenerReferences> {
+    public static final class BreadcrumbElementListenerReferences extends ListenerReferences<BreadcrumbElement, BreadcrumbElementListenerReferences> {
+        private final BreadcrumbElement parent;
+
+        public BreadcrumbElementListenerReferences(BreadcrumbElement parent) {
+            this.parent = parent;
+        }
 
         @Override
         public BreadcrumbElement back() {

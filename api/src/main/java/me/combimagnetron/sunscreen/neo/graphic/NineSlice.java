@@ -45,14 +45,19 @@ public final class NineSlice {
     }
 
     private void cutPieces() {
+        Vec2i canvasSize = canvas.size();
         Vec2i position = Vec2i.zero();
         for (int i = 0; i < 9; i++) {
             Vec2i size = pieceSizeByIndex(i);
-            parts[i] = canvas.sub(position, size);
-            if (i == 2 || i == 5) {
-                position = Vec2i.of(0, position.y() + size.y());
+            int col = i % 3;
+            int row = i / 3;
+            int w = (col == 2) ? canvasSize.x() - position.x() : size.x();
+            int h = (row == 2) ? canvasSize.y() - position.y() : size.y();
+            parts[i] = canvas.sub(position, Vec2i.of(w, h));
+            if (col == 2) {
+                position = Vec2i.of(0, position.y() + h);
             } else {
-                position = position.add(size.x(), 0);
+                position = position.add(w, 0);
             }
         }
     }
@@ -67,65 +72,49 @@ public final class NineSlice {
         };
     }
 
-    /**
-     * The parts of the nineslice which will be combined to form the final canvas.
-     * @return an array with size 9, all corners/middle parts.
-     */
     public @NotNull Canvas @NotNull [] parts() {
         return parts;
     }
 
-    /**
-     * Combines the parts from {@link NineSlice#parts()} to form a final Canvas.
-     * @param size the desired size of the final combined canvas.
-     * @return a canvas with combined parts of requested size.
-     */
     public @NotNull Canvas size(@NotNull Vec2i size) {
         Canvas construct = Canvas.empty(size);
         Vec2i corner = partSizes[0];
-        Vec2i topBottomEdge = partSizes[1];
-        Vec2i leftRightEdge = partSizes[2];
-        Vec2i middle = partSizes[3];
         int middleWidth = size.x() - corner.x() * 2;
         int middleHeight = size.y() - corner.y() * 2;
         if (middleWidth < 0 || middleHeight < 0) {
-            throw new IllegalArgumentException("Target size is too small for the nine-slice corners");
+            throw new IllegalArgumentException("Target size is too small for the nineslice corners");
         }
         BufferedColorSpace target = construct.bufferedColorSpace();
+        Vec2i topEdge = parts[1].size();
+        Vec2i leftEdge = parts[3].size();
+        Vec2i mid = parts[4].size();
         target.place(parts[0].bufferedColorSpace(), 0, 0);
-        for (int x = 0; x < middleWidth; x += topBottomEdge.x()) {
-            int width = Math.min(topBottomEdge.x(), middleWidth - x);
-            Canvas tile = parts[1].sub(Vec2i.zero(), Vec2i.of(width, topBottomEdge.y()));
-            target.place(tile.bufferedColorSpace(), corner.x() + x, 0);
+        for (int x = 0; x < middleWidth; x += topEdge.x()) {
+            int width = Math.min(topEdge.x(), middleWidth - x);
+            target.place(parts[1].sub(Vec2i.zero(), Vec2i.of(width, topEdge.y())).bufferedColorSpace(), corner.x() + x, 0);
         }
         target.place(parts[2].bufferedColorSpace(), corner.x() + middleWidth, 0);
-        for (int y = 0; y < middleHeight; y += leftRightEdge.y()) {
-            int height = Math.min(leftRightEdge.y(), middleHeight - y);
-            Canvas tile = parts[3].sub(Vec2i.zero(), Vec2i.of(leftRightEdge.x(), height));
-            target.place(tile.bufferedColorSpace(), 0, corner.y() + y);
+        for (int y = 0; y < middleHeight; y += leftEdge.y()) {
+            int height = Math.min(leftEdge.y(), middleHeight - y);
+            target.place(parts[3].sub(Vec2i.zero(), Vec2i.of(leftEdge.x(), height)).bufferedColorSpace(), 0, corner.y() + y);
         }
-        for (int y = 0; y < middleHeight; y += middle.y()) {
-            int height = Math.min(middle.y(), middleHeight - y);
-            for (int x = 0; x < middleWidth; x += middle.x()) {
-                int width = Math.min(middle.x(), middleWidth - x);
-                Canvas tile = parts[4].sub(Vec2i.zero(), Vec2i.of(width, height));
-                target.place(tile.bufferedColorSpace(), corner.x() + x, corner.y() + y);
+        for (int y = 0; y < middleHeight; y += mid.y()) {
+            int height = Math.min(mid.y(), middleHeight - y);
+            for (int x = 0; x < middleWidth; x += mid.x()) {
+                int width = Math.min(mid.x(), middleWidth - x);
+                target.place(parts[4].sub(Vec2i.zero(), Vec2i.of(width, height)).bufferedColorSpace(), corner.x() + x, corner.y() + y);
             }
         }
-        for (int y = 0; y < middleHeight; y += leftRightEdge.y()) {
-            int height = Math.min(leftRightEdge.y(), middleHeight - y);
-            Canvas tile = parts[5].sub(Vec2i.zero(), Vec2i.of(leftRightEdge.x(), height));
-            target.place(tile.bufferedColorSpace(), corner.x() + middleWidth, corner.y() + y);
+        for (int y = 0; y < middleHeight; y += leftEdge.y()) {
+            int height = Math.min(leftEdge.y(), middleHeight - y);
+            target.place(parts[5].sub(Vec2i.zero(), Vec2i.of(leftEdge.x(), height)).bufferedColorSpace(), corner.x() + middleWidth, corner.y() + y);
         }
         target.place(parts[6].bufferedColorSpace(), 0, corner.y() + middleHeight);
-        for (int x = 0; x < middleWidth; x += topBottomEdge.x()) {
-            int width = Math.min(topBottomEdge.x(), middleWidth - x);
-            Canvas tile = parts[7].sub(Vec2i.zero(), Vec2i.of(width, topBottomEdge.y()));
-            target.place(tile.bufferedColorSpace(), corner.x() + x, corner.y() + middleHeight);
+        for (int x = 0; x < middleWidth; x += topEdge.x()) {
+            int width = Math.min(topEdge.x(), middleWidth - x);
+            target.place(parts[7].sub(Vec2i.zero(), Vec2i.of(width, topEdge.y())).bufferedColorSpace(), corner.x() + x, corner.y() + middleHeight);
         }
         target.place(parts[8].bufferedColorSpace(), corner.x() + middleWidth, corner.y() + middleHeight);
-
         return construct;
     }
-
 }

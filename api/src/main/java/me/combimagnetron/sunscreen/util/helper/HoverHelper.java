@@ -17,6 +17,10 @@ public class HoverHelper {
         Vec2i vecPosition = position.value();
         Vec2i vecSize = size.value();
         if (vecPosition == null || vecSize == null) return false;
+        return in(vecPosition, vecSize, cursor);
+    }
+
+    public static boolean in(@NotNull Vec2i vecPosition, @NotNull Vec2i vecSize, @NotNull Vec2i cursor) {
         boolean xCheck = (cursor.x() >= vecPosition.x() && cursor.x() <= vecPosition.x() + vecSize.x());
         boolean yCheck = (cursor.y() >= vecPosition.y() && cursor.y() <= vecPosition.y() + vecSize.y());
         return xCheck && yCheck;

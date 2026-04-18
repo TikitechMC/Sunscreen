@@ -74,8 +74,13 @@ public final class RenderContext {
             canvasses, loadedComponents);
     }
 
+    public @NotNull RenderContext withComponents(@NotNull Collection<MenuComponent<?>> loadedComponents) {
+        return new RenderContext(viewport, tree, markedForRemoval, renderCache, bytes,
+            canvasses, loadedComponents);
+    }
+
     public @NotNull ModernTheme theme() {
-        return (ModernTheme) loadedComponents.stream().filter(menuComponent -> menuComponent.type().equals(ModernTheme.class)).findAny().orElseThrow();
+        return (ModernTheme) loadedComponents.stream().filter(menuComponent -> menuComponent instanceof ModernTheme).findAny().orElseThrow();
     }
 
     public @Nullable ThemeDecorator decorator(@NotNull ModernElement<?, ?> elementLike) {

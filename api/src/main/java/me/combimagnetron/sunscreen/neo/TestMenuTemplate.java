@@ -1,36 +1,64 @@
 package me.combimagnetron.sunscreen.neo;
 
-import me.combimagnetron.passport.event.EventBus;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
-import me.combimagnetron.sunscreen.SunscreenLibrary;
-import me.combimagnetron.sunscreen.neo.editor.element.MenuPreviewElement;
+import me.combimagnetron.sunscreen.neo.editor.element.EditorNameElement;
 import me.combimagnetron.sunscreen.neo.element.Elements;
-import me.combimagnetron.sunscreen.neo.element.impl.ComparisonElement;
-import me.combimagnetron.sunscreen.neo.element.impl.SliderElement;
+import me.combimagnetron.sunscreen.neo.element.impl.SelectorElement;
 import me.combimagnetron.sunscreen.neo.element.impl.ButtonElement;
 import me.combimagnetron.sunscreen.neo.element.impl.text.TextFieldElement;
-import me.combimagnetron.sunscreen.neo.event.UserClickElementEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.NineSlice;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
-import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Decorator;
 import me.combimagnetron.sunscreen.neo.property.Position;
-import me.combimagnetron.sunscreen.neo.property.RelativeMeasure;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
 import me.combimagnetron.sunscreen.neo.theme.color.ColorSchemes;
 import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
 import me.combimagnetron.sunscreen.neo.theme.decorator.ThemeDecorator;
-import me.combimagnetron.sunscreen.user.SunscreenUser;
-import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
-
-import java.nio.file.Path;
 
 public class TestMenuTemplate implements MenuTemplate {
     private static final Identifier IDENTIFIER = Identifier.of("sunscreen", "test_menu");
+    public static final ModernTheme THEME = ModernTheme.theme(
+        Identifier.of(
+            "sunscreen",
+            "test_menu/theme/test")
+    ).colorScheme(
+        ColorSchemes.EDITOR
+    ).decorator(
+        ThemeDecorator.stated(
+                Target.typed(ButtonElement.class)
+            )
+            .standard(Canvas.resource("default.png"))
+            .hovered(Canvas.resource("hovered.png"))
+            .clicked(Canvas.resource("clicked.png"))
+    ).decorator(
+        ThemeDecorator.nineSlice(
+            Target.typed(TextFieldElement.class),
+            NineSlice.nineSlice(Canvas.empty(Vec2i.of(9, 9)).fill(Vec2i.zero(), Vec2i.of(9, 9), Color.of(13, 13, 13)))
+        )
+    ).decorator(
+        ThemeDecorator.stated(
+                Target.identifier(Identifier.of("sunscreen", "decorator/secondary_button"))
+            )
+            .standard(Canvas.resource("secondary_default.png"))
+            .hovered(Canvas.resource("secondary_hover.png"))
+            .clicked(Canvas.resource("secondary_click.png"))
+    ).decorator(
+        ThemeDecorator.stated(
+            Target.typed(SelectorElement.class)
+                )
+                    .standard(Canvas.resource("editor_assets/e_default.png"))
+        .hovered(Canvas.resource("editor_assets/e_hover.png"))
+        .clicked(Canvas.resource("editor_assets/e_click.png"))
+    ).decorator(
+        ThemeDecorator.nineSlice(
+            Target.typed(EditorNameElement.class),
+                NineSlice.nineSlice(Canvas.empty(Vec2i.of(9, 9)).fill(Vec2i.zero(), Vec2i.of(9, 9), Color.of(27, 27, 27)))
+        )
+    );
 
     @Override
     public @NotNull Identifier identifier() {
@@ -40,32 +68,7 @@ public class TestMenuTemplate implements MenuTemplate {
     @Override
     public void build(@NotNull MenuRoot root) {
         root.theme(
-            ModernTheme.theme(
-                Identifier.of(
-                    "sunscreen",
-                    "test_menu/theme/test")
-            ).colorScheme(
-                ColorSchemes.EDITOR
-            ).decorator(
-                ThemeDecorator.stated(
-                    Target.typed(ButtonElement.class)
-                )
-                    .standard(Canvas.resource("default.png"))
-                    .hovered(Canvas.resource("hovered.png"))
-                    .clicked(Canvas.resource("clicked.png"))
-            ).decorator(
-                ThemeDecorator.nineSlice(
-                    Target.typed(TextFieldElement.class),
-                    NineSlice.nineSlice(Canvas.empty(Vec2i.of(9, 9)).fill(Vec2i.zero(), Vec2i.of(9, 9), Color.of(13, 13, 13)))
-                )
-            ).decorator(
-                ThemeDecorator.stated(
-                    Target.identifier(Identifier.of("sunscreen", "decorator/secondary_button"))
-                )
-                    .standard(Canvas.resource("secondary_default.png"))
-                    .hovered(Canvas.resource("secondary_hover.png"))
-                    .clicked(Canvas.resource("secondary_click.png"))
-            )
+            THEME
         );
         root
             .element(

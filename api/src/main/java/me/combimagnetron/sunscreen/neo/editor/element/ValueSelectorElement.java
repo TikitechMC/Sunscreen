@@ -1,10 +1,13 @@
 package me.combimagnetron.sunscreen.neo.editor.element;
 
+import me.combimagnetron.passport.event.Event;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.cursor.CursorStyle;
+import me.combimagnetron.sunscreen.neo.editor.input.SelectorInputContext;
 import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.event.UserMoveStateChangeEvent;
+import me.combimagnetron.sunscreen.neo.event.UserUpdateSelectorInputEvent;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.shape.Shape;
@@ -14,26 +17,30 @@ import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
+import me.combimagnetron.sunscreen.neo.property.Visibility;
 import me.combimagnetron.sunscreen.neo.registry.Registries;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.util.FileProvider;
 import me.combimagnetron.sunscreen.util.helper.HoverHelper;
 import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-public class ValueSelectorElement extends GenericInteractableModernElement<ValueSelectorElement, Canvas, ValueSelectorElement.PaddingMarginElementListenerReferences> {
+import java.util.Arrays;
+
+public class ValueSelectorElement extends GenericInteractableModernElement<ValueSelectorElement, Canvas, ValueSelectorElement.ValueSelectorElementListenerReferences> {
     private static final Vec2i SIZE = Vec2i.of(137, 38);
     private static final Canvas SELECTED_PANES = Canvas.file(FileProvider.resource().find("panes_selected.png").toPath());
-    private final PaddingMarginElementListenerReferences references = new PaddingMarginElementListenerReferences(this);
+    private final ValueSelectorElementListenerReferences references = new ValueSelectorElementListenerReferences(this);
     private CursorStyle style = CursorStyle.pointer();
     private Vec2i startPos = null;
     private Section previous = null;
     private Section hovered = null;
     private int[] values = new int[4];
 
-    public ValueSelectorElement(@Nullable Identifier identifier) {
+    protected ValueSelectorElement(@Nullable Identifier identifier) {
         super(identifier);
         size(Size.fixed(SIZE));
     }
@@ -43,12 +50,28 @@ public class ValueSelectorElement extends GenericInteractableModernElement<Value
         super.lateInit();
         InputHandler handler = inputHandler();
         if (handler == null) return;
-        handler.subscribe(MouseInputContext.class, this::handleCursor);
+        handler.subscribe(identifier(), MouseInputContext.class, this::handleCursor);
+        handler.subscribe(identifier(), SelectorInputContext.class, this::selector);
+    }
+
+    private void selector(@NotNull UserUpdateSelectorInputEvent event) {
+        if (event.user() != inputHandler().user()) return;
+        SelectorInputContext context = event.context();
+        if (context == null) return;
+        SelectorInputContext.InnerContext<?> context1 = context.innerContexts().get(identifier());
+        if (context1 == null) {
+            return;
+        }
+        int[] newValues = ArrayUtils.toPrimitive((Integer[]) context1.values());
+        if (Arrays.equals(newValues, values)) return;
+        values = newValues;
     }
 
     private void handleCursor(@NotNull UserMoveStateChangeEvent event) {
         if (event.user() != inputHandler().user()) return;
         final MouseInputContext context = event.context();
+        Visibility visibility = visibility();
+        if (visibility.hide()) return;
         Vec2i cursor = context.position();
         boolean hover = HoverHelper.in(this, cursor);
         if (hovered == null && style != CursorStyle.pointer()) {
@@ -76,12 +99,13 @@ public class ValueSelectorElement extends GenericInteractableModernElement<Value
         style = CursorStyle.resizeHorizontal();
         int ordinal = hovered.ordinal();
         int delta = startPos.x() - cursor.x();
-        values[ordinal] += delta;
+        values[ordinal] -= delta;
         startPos = cursor;
+        inputHandler().peek(SelectorInputContext.class, old -> old.inner(identifier(), new SelectorInputContext.ValueInnerContext(ArrayUtils.toObject(values))), event.user());
     }
 
     @Override
-    public @NonNull PaddingMarginElementListenerReferences listen() {
+    public @NotNull ValueSelectorElement.ValueSelectorElementListenerReferences listen() {
         return references;
     }
 
@@ -110,8 +134,17 @@ public class ValueSelectorElement extends GenericInteractableModernElement<Value
         return canvas;
     }
 
-    public record PaddingMarginElementListenerReferences(
-        ValueSelectorElement back) implements ListenerReferences<ValueSelectorElement, PaddingMarginElementListenerReferences> {
+    public static final class ValueSelectorElementListenerReferences extends ListenerReferences<ValueSelectorElement, ValueSelectorElementListenerReferences> {
+        private final ValueSelectorElement back;
+
+        public ValueSelectorElementListenerReferences(ValueSelectorElement back) {
+            this.back = back;
+        }
+
+        @Override
+        public ValueSelectorElement back() {
+            return back;
+        }
 
     }
 

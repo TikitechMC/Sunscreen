@@ -21,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 public class SliderElement extends GenericInteractableModernElement<SliderElement, Canvas, SliderElement.PaddingMarginElementListenerReferences> {
     private static final Vec2i SIZE = Vec2i.of(137, 38);
     private final PaddingMarginElementListenerReferences references = new PaddingMarginElementListenerReferences(this);
@@ -38,7 +40,8 @@ public class SliderElement extends GenericInteractableModernElement<SliderElemen
         super.lateInit();
         InputHandler handler = inputHandler();
         if (handler == null) return;
-        handler.subscribe(MouseInputContext.class, this::handleCursor);
+        references.subscribe(handler);
+        handler.subscribe(identifier(), MouseInputContext.class, this::handleCursor);
     }
 
     private void handleCursor(@NotNull UserMoveStateChangeEvent event) {
@@ -93,8 +96,18 @@ public class SliderElement extends GenericInteractableModernElement<SliderElemen
         return canvas;
     }
 
-    public record PaddingMarginElementListenerReferences(
-        SliderElement back) implements ListenerReferences<SliderElement, PaddingMarginElementListenerReferences> {
+    public static final class PaddingMarginElementListenerReferences extends ListenerReferences<SliderElement, PaddingMarginElementListenerReferences> {
+        private final SliderElement back;
+
+        public PaddingMarginElementListenerReferences(
+            SliderElement back) {
+            this.back = back;
+        }
+
+        @Override
+        public SliderElement back() {
+            return back;
+        }
 
     }
 

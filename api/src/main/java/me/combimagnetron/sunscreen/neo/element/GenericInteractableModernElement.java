@@ -13,7 +13,8 @@ import me.combimagnetron.sunscreen.util.helper.HoverHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class GenericInteractableModernElement<E extends ModernElement<E, G>, G extends GraphicLike<G>, R extends ListenerReferences<E, R>> extends GenericModernElement<E, G> implements Interactable<E, R> {
+public abstract class GenericInteractableModernElement<E extends ModernElement<E, G>, G extends GraphicLike<G>, R extends ListenerReferences<E, R>>
+        extends GenericModernElement<E, G> implements Interactable<E, R> {
     private InputHandler inputHandler;
     protected final MutableState<ElementPhase> state = State.mutable(ElementPhase.DEFAULT);
 
@@ -40,7 +41,7 @@ public abstract class GenericInteractableModernElement<E extends ModernElement<E
         lateInit();
     }
 
-    protected @Nullable InputHandler inputHandler() {
+    public @Nullable InputHandler inputHandler() {
         return inputHandler;
     }
 
@@ -50,9 +51,14 @@ public abstract class GenericInteractableModernElement<E extends ModernElement<E
     }
 
     public interface ElementPhase {
-        ElementPhase DEFAULT = new ElementPhase() {};
-        ElementPhase HOVER = new ElementPhase() {};
-        ElementPhase CLICK = new ElementPhase() {};
+        ElementPhase DEFAULT = new ElementPhase() {
+        };
+        ElementPhase HOVER = new ElementPhase() {
+        };
+        ElementPhase CLICK = new ElementPhase() {
+        };
+        ElementPhase DISABLED = new ElementPhase() {
+        };
     }
 
 }

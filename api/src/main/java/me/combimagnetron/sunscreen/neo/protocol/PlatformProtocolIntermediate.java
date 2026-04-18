@@ -29,7 +29,11 @@ public interface PlatformProtocolIntermediate {
 
     void bundleDelimiter(@NotNull SunscreenUser<?> user);
 
-    void openEmptyAnvil(SunscreenUser<?> user);
+    void openEmptyAnvil(@NotNull SunscreenUser<?> user);
+
+    void sendItems(@NotNull SunscreenUser<?> user);
+
+    void removeMaps(@NotNull SunscreenUser<?> user);
 
     default void removeEntity(@NotNull SunscreenUser<?> user, @NotNull EntityReference<?> reference) {
         removeEntity(user, reference.id());

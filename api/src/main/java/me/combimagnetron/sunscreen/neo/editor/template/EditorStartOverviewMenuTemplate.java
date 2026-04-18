@@ -5,27 +5,36 @@ import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.ActiveMenu;
 import me.combimagnetron.sunscreen.neo.MenuRoot;
 import me.combimagnetron.sunscreen.neo.MenuTemplate;
+import me.combimagnetron.sunscreen.neo.TestMenuTemplate;
+import me.combimagnetron.sunscreen.neo.editor.EditorController;
 import me.combimagnetron.sunscreen.neo.editor.element.EditorElements;
+import me.combimagnetron.sunscreen.neo.editor.element.EditorNameElement;
 import me.combimagnetron.sunscreen.neo.element.Elements;
+import me.combimagnetron.sunscreen.neo.element.impl.ButtonElement;
+import me.combimagnetron.sunscreen.neo.element.impl.DropdownElement;
+import me.combimagnetron.sunscreen.neo.element.impl.SelectorElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
 import me.combimagnetron.sunscreen.neo.layout.Layout;
-import me.combimagnetron.sunscreen.neo.property.Position;
-import me.combimagnetron.sunscreen.neo.property.RelativeMeasure;
-import me.combimagnetron.sunscreen.neo.property.Size;
-import me.combimagnetron.sunscreen.neo.property.Visibility;
+import me.combimagnetron.sunscreen.neo.property.*;
 import me.combimagnetron.sunscreen.neo.registry.Registries;
+import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
 import org.jetbrains.annotations.NotNull;
 
 public class EditorStartOverviewMenuTemplate implements MenuTemplate {
     private final static Identifier IDENTIFIER = Identifier.of("sunscreen", "internal/editor/start");
+    private final EditorController controller;
 
     @Override
     public @NotNull Identifier identifier() {
         return IDENTIFIER;
+    }
+
+    public EditorStartOverviewMenuTemplate(@NotNull EditorController controller) {
+        this.controller = controller;
     }
 
     @Override
@@ -64,6 +73,8 @@ public class EditorStartOverviewMenuTemplate implements MenuTemplate {
                 Text.basic("Centered").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2)),
                 Vec2i.of(31, 2)
             ).listen().click(event -> {
+                if (!(event.element() instanceof ButtonElement)) return;
+                if (!event.element().identifier().key().string().equals("new_project/centered_label")) return;
                 ActiveMenu menu = event.menu();
                 menu.element(Identifier.of("new_project/wizard")).visibility(Visibility.visible());
             }).back().position(Position.fixed(position.add(4, 26))).size(Size.fixed(Vec2i.of(108, 12)))
@@ -90,7 +101,7 @@ public class EditorStartOverviewMenuTemplate implements MenuTemplate {
                 ).position(Position.nil()),
                 Elements.label(
                     Identifier.of("new_project/wizard/label"),
-                    Text.basic("New Project Wizard").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2))
+                    Text.basic("New Project").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2))
                 ).size(Size.fixed(Vec2i.of(143, 20))).position(Position.fixed(Vec2i.of(1, 1))),
                 Elements.label(
                     Identifier.of("new_project/wizard/display_name_label"),
@@ -102,9 +113,41 @@ public class EditorStartOverviewMenuTemplate implements MenuTemplate {
                 ).size(Size.fixed(Vec2i.of(143, 20))).position(Position.fixed(Vec2i.of(2, 32))),
                 EditorElements.nameElement(
                     Identifier.of("new_project/wizard/name_element")
-                ).size(Size.fixed(Vec2i.of(193, 10))).position(Position.fixed(Vec2i.of(2, 20)))
+                ).size(Size.fixed(Vec2i.of(193, 10))).position(Position.fixed(Vec2i.of(2, 20))),
+                Elements.button(
+                    Identifier.of("new_project/wizard/confirm_button"),
+                    Text.basic("Create").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2)),
+                    Vec2i.of(31, 3)
+                ).listen().click(event -> {
+                    if (!event.element().identifier().key().string().equals("new_project/wizard/confirm_button")) return;
+                    Layout<?> layout = (Layout<?>) event.menu().element(Identifier.of("new_project/wizard"));
+                    EditorNameElement nameElement = (EditorNameElement) layout.child(Identifier.of("new_project/wizard/name_element"));
+                    if (!nameElement.validate()) return;
+                    controller.editor(nameElement.fakeIdentifier(), nameElement.displayName(), TestMenuTemplate.THEME);
+                }).back().size(Size.fixed(Vec2i.of(96, 14))).position(Position.fixed(Vec2i.of(100, 254))).decorator(Decorator.decorator(Target.identifier(Identifier.of("sunscreen", "internal/editor/theme/decorator/button_confirm")))),
+                Elements.button(
+                    Identifier.of("new_project/wizard/cancel_button"),
+                    Text.basic("Cancel").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).color(TextColor.color(Color.of(180, 180, 180))).fontProperties(FontProperties.properties().baseline(-2)),
+                    Vec2i.of(31, 3)
+                ).listen().click(event -> {
+                    if (!event.element().identifier().key().string().equals("new_project/wizard/cancel_button")) return;
+                    Layout<?> layout = (Layout<?>) event.menu().element(Identifier.of("new_project/wizard"));
+                    layout.visibility(Visibility.hidden());
+                }).back().size(Size.fixed(Vec2i.of(96, 14))).position(Position.fixed(Vec2i.of(2, 254))),
+                new DropdownElement(
+                    Identifier.of("new_project/wizard/theme_dropdown"),
+                    11
+                ).entry(vanilla("Tropical")).entry(vanilla("Modern")).size(Size.fixed(Vec2i.of(193, 50))).position(Position.fixed(Vec2i.of(2, 61))).decorator(Decorator.decorator(Target.typed(SelectorElement.class))),
+                Elements.label(
+                    Identifier.of("new_project/wizard/theme_label"),
+                    Text.basic("Theme").font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).color(TextColor.color(Color.of(180, 180, 180))).fontProperties(FontProperties.properties().baseline(-2))
+                ).size(Size.fixed(Vec2i.of(143, 20))).position(Position.fixed(Vec2i.of(2, 53)))
             ).size(Size.fixed(Vec2i.of(400, 400))).position(Position.fixed(Vec2i.of(301, 105))).visibility(Visibility.hidden())
         );
+    }
+
+    private static @NotNull Text vanilla(@NotNull String content) {
+        return Text.basic(content).font(Registries.fonts().get(Identifier.of("sunscreen", "font/minecraft"))).fontProperties(FontProperties.properties().baseline(-2));
     }
 
 }

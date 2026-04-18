@@ -14,12 +14,17 @@ public class NameHelper {
         return namespace.toLowerCase() + ":menu/" + replaced;
     }
 
+    public static @NotNull String suggestIdentifier(String displayName, String namespace, String start) {
+        String replaced = displayName.toLowerCase().trim().replaceAll(" ", "_");
+        return namespace.toLowerCase() + ":" + start + "/" + replaced;
+    }
+
     public static @NotNull String suggestIdentifier(@NotNull String displayName) {
         return suggestIdentifier(displayName, "custom");
     }
 
     public static @NotNull String suggestDisplayName(@NotNull String identifier) {
-        String key = identifier.split(":")[0];
+        String key = identifier.split(":")[1];
         if (key == null) return "Invalid identifier";
         if (key.contains("/")) {
             String[] parts = key.split("/");

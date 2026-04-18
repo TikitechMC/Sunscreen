@@ -10,6 +10,7 @@ import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.Highlight;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.HighlightImpl;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColorImpl;
+import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.decoration.DecorationStyle;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.Font;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
 import me.combimagnetron.sunscreen.neo.property.Size;
@@ -30,20 +31,22 @@ public final class TextImpl implements Text {
     private final TextColor textColor;
     private final Highlight highlight;
     private final List<Text> children;
+    private final DecorationStyle decorationStyle;
 
     private TextImpl(String content, Font font, FontProperties fontProperties, TextColor textColor, Highlight highlight,
-            List<Text> children) {
+            List<Text> children, DecorationStyle decorationStyle) {
         this.content = content;
         this.font = font;
         this.fontProperties = fontProperties;
         this.textColor = textColor;
         this.highlight = highlight;
         this.children = children;
+        this.decorationStyle = decorationStyle;
     }
 
     public static @NotNull TextImpl basic(@NotNull String content) {
         return new TextImpl(content, null, FontProperties.properties(), new TextColorImpl(Color.of(255, 255, 255)),
-                new HighlightImpl(Color.none()), new ArrayList<>());
+                new HighlightImpl(Color.none()), new ArrayList<>(), null);
     }
 
     public static @NotNull TextImpl chained(@NotNull Text @NotNull... texts) {
@@ -66,16 +69,19 @@ public final class TextImpl implements Text {
     @Override
     public @NotNull <S extends Style<?>> Text style(@NotNull S style) {
         if (style instanceof FontProperties props) {
-            return new TextImpl(content, font, props, textColor, highlight, children);
+            return new TextImpl(content, font, props, textColor, highlight, children, decorationStyle);
         }
         if (style instanceof TextColor color) {
-            return new TextImpl(content, font, fontProperties, color, highlight, children);
+            return new TextImpl(content, font, fontProperties, color, highlight, children, decorationStyle);
         }
         if (style instanceof Font f) {
-            return new TextImpl(content, f, fontProperties, textColor, highlight, children);
+            return new TextImpl(content, f, fontProperties, textColor, highlight, children, decorationStyle);
         }
         if (style instanceof Highlight h) {
-            return new TextImpl(content, font, fontProperties, textColor, h, children);
+            return new TextImpl(content, font, fontProperties, textColor, h, children, decorationStyle);
+        }
+        if (style instanceof DecorationStyle d) {
+            return new TextImpl(content, font, fontProperties, textColor, highlight, children, d);
         }
         return this;
     }
@@ -100,9 +106,13 @@ public final class TextImpl implements Text {
         return highlight;
     }
 
+    public DecorationStyle decorationStyle() {
+        return decorationStyle;
+    }
+
     @Override
     public @NotNull Text content(@NotNull String string) {
-        return new TextImpl(string, font, fontProperties, textColor, highlight, children);
+        return new TextImpl(string, font, fontProperties, textColor, highlight, children, decorationStyle);
     }
 
     @Override
@@ -115,7 +125,7 @@ public final class TextImpl implements Text {
     public @NotNull Text append(@NotNull Text text) {
         List<Text> newChildren = new ArrayList<>(children);
         newChildren.add(text);
-        return new TextImpl(content, font, fontProperties, textColor, highlight, newChildren);
+        return new TextImpl(content, font, fontProperties, textColor, highlight, newChildren, decorationStyle);
     }
 
     @Override

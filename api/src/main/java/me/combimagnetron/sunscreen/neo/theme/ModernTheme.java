@@ -1,6 +1,7 @@
 package me.combimagnetron.sunscreen.neo.theme;
 
 import me.combimagnetron.passport.util.data.Identifier;
+import me.combimagnetron.sunscreen.neo.editor.virtual.VirtualTheme;
 import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponent;
@@ -13,10 +14,12 @@ import me.combimagnetron.sunscreen.util.IdentifierHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public sealed interface ModernTheme extends MenuComponent<ModernTheme>, IdentifierHolder permits ModernTheme.SimpleModernTheme {
+public interface ModernTheme extends MenuComponent<ModernTheme>, IdentifierHolder {
 
     @NotNull Identifier identifier();
 
@@ -29,6 +32,8 @@ public sealed interface ModernTheme extends MenuComponent<ModernTheme>, Identifi
     @NotNull ModernTheme colorScheme(@NotNull ColorScheme colorScheme);
 
     @Nullable ColorScheme colorScheme();
+
+    @NotNull Collection<ThemeDecorator> decorators();
 
     static @NotNull ModernTheme theme(@NotNull Identifier identifier) {
         return new SimpleModernTheme(identifier);
@@ -74,6 +79,11 @@ public sealed interface ModernTheme extends MenuComponent<ModernTheme>, Identifi
         @Override
         public @Nullable ColorScheme colorScheme() {
             return colorScheme;
+        }
+
+        @Override
+        public @NotNull Collection<ThemeDecorator> decorators() {
+            return decoratorMap.values();
         }
 
         @Override
