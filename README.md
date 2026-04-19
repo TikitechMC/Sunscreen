@@ -41,5 +41,7 @@ Rendered at 6fps to fit in a gif, a lot smoother in-game.
 ## Credits and Appreciation
 I'd like to offer special thanks to the following people for either providing public resources or helping significantly in any way.
 - `willemdev (@OmeWillem)` for helping with the map encoding system/shader and immense amounts of support.
+- `_Flaster (@FlasterMC)` for contributing to the core shaders to allow for any arbitrary screen size.
+- `taiyouh (@Taiyou06)` for huge performance improvements to the map encoding system.
 - `retrooper (@retrooper)` for creating and providing [packetevents](https://github.com/retrooper/packetevents) and thus saving lots of compatibility worries.
 - `pianoman911 & booky10 (@pianoman911, @booky10)` for the inspiration for my own BufferedImage alternative (BufferedColorSpace) through their code in [MapEngine](https://github.com/MinceraftMC/MapEngine)
