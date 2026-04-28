@@ -4,7 +4,7 @@ import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.TextImpl;
-import me.combimagnetron.sunscreen.neo.graphic.text.decoration.Decoration;
+import me.combimagnetron.sunscreen.neo.graphic.text.decoration.DecorationType;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColorImpl;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.decoration.DecorationStyle;
@@ -81,27 +81,27 @@ public class Adventure2NativeTransformer {
     }
 
     private static @Nullable DecorationStyle extractDecorations(@NotNull Component component) {
-        Set<Decoration> decorations = EnumSet.noneOf(Decoration.class);
+        Set<DecorationType> decorationTypes = EnumSet.noneOf(DecorationType.class);
 
         for (TextDecoration decoration : TextDecoration.values()) {
             if (component.decoration(decoration) == TextDecoration.State.TRUE) {
-                decorations.add(mapDecoration(decoration));
+                decorationTypes.add(mapDecoration(decoration));
             }
         }
 
-        if (decorations.isEmpty()) {
+        if (decorationTypes.isEmpty()) {
             return null;
         }
-        return DecorationStyle.of(decorations.toArray(new Decoration[0]));
+        return DecorationStyle.of(decorationTypes.toArray(new DecorationType[0]));
     }
 
-    private static @NotNull Decoration mapDecoration(@NotNull TextDecoration decoration) {
+    private static @NotNull DecorationType mapDecoration(@NotNull TextDecoration decoration) {
         return switch (decoration) {
-            case BOLD -> Decoration.BOLD;
-            case ITALIC -> Decoration.ITALIC;
-            case STRIKETHROUGH -> Decoration.STRIKE_THROUGH;
-            case UNDERLINED -> Decoration.UNDERLINED;
-            case OBFUSCATED -> Decoration.ITALIC;
+            case BOLD -> DecorationType.BOLD;
+            case ITALIC -> DecorationType.ITALIC;
+            case STRIKETHROUGH -> DecorationType.STRIKE_THROUGH;
+            case UNDERLINED -> DecorationType.UNDERLINED;
+            case OBFUSCATED -> DecorationType.ITALIC;
         };
     }
 
