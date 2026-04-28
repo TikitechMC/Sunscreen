@@ -7,7 +7,7 @@ import me.combimagnetron.sunscreen.neo.graphic.color.SpacedColorLike;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface Gradient extends SpacedColorLike, TextColor {
+public sealed interface Gradient extends SpacedColorLike, TextColor {
 
     static @NotNull Gradient radial(@NotNull ColorLike center, @NotNull ColorLike edge) {
         return new RadialGradient(center, edge);

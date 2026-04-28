@@ -6,8 +6,7 @@ import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.TextImpl;
 import me.combimagnetron.sunscreen.neo.graphic.text.decoration.DecorationType;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
-import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColorImpl;
-import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.decoration.DecorationStyle;
+import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.decoration.Decoration;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.Font;
 import me.combimagnetron.sunscreen.neo.registry.Registries;
 import net.kyori.adventure.text.Component;
@@ -31,7 +30,7 @@ public class Adventure2NativeTransformer {
         String content = extractContent(component);
         TextColor textColor = extractColor(component);
         Font font = extractFont(component);
-        DecorationStyle decorationStyle = extractDecorations(component);
+        Decoration decorationStyle = extractDecorations(component);
 
         TextImpl text = TextImpl.basic(content);
         text = (TextImpl) text.color(textColor);
@@ -62,9 +61,9 @@ public class Adventure2NativeTransformer {
     private static @NotNull TextColor extractColor(@NotNull Component component) {
         net.kyori.adventure.text.format.TextColor adventureColor = component.color();
         if (adventureColor != null) {
-            return TextColorImpl.color(Color.of(adventureColor));
+            return TextColor.color(Color.of(adventureColor));
         }
-        return TextColorImpl.color(Color.of(255, 255, 255));
+        return TextColor.color(Color.of(255, 255, 255));
     }
 
     private static @Nullable Font extractFont(@NotNull Component component) {
@@ -80,7 +79,7 @@ public class Adventure2NativeTransformer {
         return null;
     }
 
-    private static @Nullable DecorationStyle extractDecorations(@NotNull Component component) {
+    private static @Nullable Decoration extractDecorations(@NotNull Component component) {
         Set<DecorationType> decorationTypes = EnumSet.noneOf(DecorationType.class);
 
         for (TextDecoration decoration : TextDecoration.values()) {
@@ -92,7 +91,7 @@ public class Adventure2NativeTransformer {
         if (decorationTypes.isEmpty()) {
             return null;
         }
-        return DecorationStyle.of(decorationTypes.toArray(new DecorationType[0]));
+        return Decoration.of(decorationTypes.toArray(new DecorationType[0]));
     }
 
     private static @NotNull DecorationType mapDecoration(@NotNull TextDecoration decoration) {

@@ -7,6 +7,7 @@ import me.combimagnetron.sunscreen.neo.graphic.color.Color;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.Gradient;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.Highlight;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
+import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.decoration.Decoration;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.Font;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.Style;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
@@ -67,25 +68,20 @@ public sealed interface Text extends Renderable<Size, Canvas> permits TextImpl {
         return style(highlight);
     }
 
-    @NotNull
-    FontProperties fontProperties();
+    @NotNull FontProperties fontProperties();
 
-    @NotNull
-    TextColor color();
+    @NotNull TextColor color();
 
-    @NotNull
-    Font font();
+    @NotNull Font font();
 
-    @NotNull
-    Highlight highlight();
+    @NotNull Highlight highlight();
 
-    @NotNull
-    Text content(@NotNull String string);
+    @NotNull Decoration decoration();
 
-    @NotNull
-    Text content(@NotNull Component component);
+    @NotNull Text content(@NotNull String string);
 
-    @NotNull
-    Text append(@NotNull Text text);
+    @NotNull Text content(@NotNull Component component);
+
+    @NotNull Text append(@NotNull Text text);
 
 }
