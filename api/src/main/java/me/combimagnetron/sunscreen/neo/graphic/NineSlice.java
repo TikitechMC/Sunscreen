@@ -44,6 +44,10 @@ public final class NineSlice {
         cutPieces();
     }
 
+    public @NotNull Canvas sourceCanvas() {
+        return canvas;
+    }
+
     private void cutPieces() {
         Vec2i canvasSize = canvas.size();
         Vec2i position = Vec2i.zero();
