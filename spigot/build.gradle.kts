@@ -4,8 +4,7 @@ plugins {
     id("java")
     id("com.gradleup.shadow") version "9.2.2"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
-    //id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("de.eldoria.plugin-yml.paper") version "0.7.1"
 }
 
 repositories {
@@ -88,12 +87,13 @@ dependencies {
     library(libs().bundles.utils)
 }
 
-bukkit {
+paper {
     name = "Sunscreen"
     main = "me.combimagnetron.sunscreen.SunscreenPlugin"
-    apiVersion = "1.21.11"
+    apiVersion = "1.21"
+    foliaSupported = true
     version = project.version.toString()
     authors = listOf("Combimagnetron")
     description = "Create UIs like never seen before, all from within the game!"
-    website = "https://combimagnetron.me"
+    website = "https://sunscreen.combimagnetron.net"
 }
