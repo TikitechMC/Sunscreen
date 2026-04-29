@@ -65,7 +65,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         horse.invisible(true);
         horse.noGravity(true);
         horse.crouching(true);
-        if (PacketEvents.getAPI().getPlayerManager().getClientVersion(player).getProtocolVersion() >= ClientVersion.V_1_21_5.getProtocolVersion()) {
+        if (protocolVersion(player) >= ClientVersion.V_1_21_5.getProtocolVersion()) {
             equipmentSlot = EquipmentSlot.SADDLE;
         } else {
             horse.saddled(true);
@@ -139,7 +139,8 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         }
         UserProfile profile = new UserProfile(uuid, player.getName(), properties);
         WrapperPlayServerSpawnEntity spawnEntity = new WrapperPlayServerSpawnEntity(-10_000, uuid, EntityTypes.PLAYER, new com.github.retrooper.packetevents.protocol.world.Location(player.getX(), player.getY(), player.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch()), player.getYaw(), 0, com.github.retrooper.packetevents.util.Vector3d.zero());
-        WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(-10_000, List.of(new EntityData<>(16, EntityDataTypes.BYTE, (byte) player.getClientOption(ClientOption.SKIN_PARTS).getRaw())));
+        int index = protocolVersion(player) >= ClientVersion.V_1_21_9.getProtocolVersion() ? 16 : 17;
+        WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(-10_000, List.of(new EntityData<>(index, EntityDataTypes.BYTE, (byte) player.getClientOption(ClientOption.SKIN_PARTS).getRaw())));
         WrapperPlayServerPlayerInfoUpdate infoUpdate = new WrapperPlayServerPlayerInfoUpdate(WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER, new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(profile, false, 0, GameMode.CREATIVE, null, null, 0, true));
         WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.EXPOSED_COPPER_GRATE));
         WrapperPlayServerEntityTeleport positionSync = new WrapperPlayServerEntityTeleport(-10_000, new com.github.retrooper.packetevents.util.Vector3d(player.getX(), player.getY(), player.getZ()), com.github.retrooper.packetevents.util.Vector3d.zero(), player.getYaw(), player.getPitch(), RelativeFlag.NONE, player.isOnGround());
@@ -268,15 +269,15 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         return Vector3d.vec3(location.x(), location.y(), location.z());
     }
 
-    private static @NotNull com.github.retrooper.packetevents.protocol.world.Location vec32PeLoc(@NotNull Vector3d position, @NotNull Vector3d rotation) {
-        return new com.github.retrooper.packetevents.protocol.world.Location(new com.github.retrooper.packetevents.util.Vector3d(position.x(), position.y(), position.z()), (float) rotation.x(), (float) rotation.y());
-    }
-
     private static void send(@NotNull SunscreenUser<?> user, @NotNull PacketWrapper<?>... wrappers) {
         Connection connection = user.connection();
         for (PacketWrapper<?> wrapper : wrappers) {
             connection.send(wrapper);
         }
+    }
+
+    private static int protocolVersion(Player player) {
+        return PacketEvents.getAPI().getPlayerManager().getClientVersion(player).getProtocolVersion();
     }
 
     private static @NotNull WrapperPlayServerEntityEquipment horseEquipment(@NotNull String texturePath, int id, EquipmentSlot equipmentSlot) {
@@ -286,7 +287,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
                         new Equipment(equipmentSlot,
                                 ItemStack.builder().type(ItemTypes.SADDLE).build()),
                         new Equipment(EquipmentSlot.BODY,
-                                ItemStack.builder().type(ItemTypes.COPPER_HORSE_ARMOR).
+                                ItemStack.builder().type(ItemTypes.DIAMOND_HORSE_ARMOR).
                                         component(ComponentTypes.EQUIPPABLE,
                                                 new ItemEquippable(EquipmentSlot.BODY, Sounds.ITEM_ARMOR_EQUIP_GENERIC, new ResourceLocation("sunscreen", texturePath), null, null, false, false, false)).build())));
 
