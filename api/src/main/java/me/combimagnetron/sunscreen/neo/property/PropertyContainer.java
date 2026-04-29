@@ -1,6 +1,8 @@
 package me.combimagnetron.sunscreen.neo.property;
 
+import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
+import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +36,11 @@ public interface PropertyContainer<R> {
     }
 
     default @NotNull Position position() {
-        return propOrThrow(Position.class);
+        var pos = propOrThrow(Position.class);
+        if (pos.target() != Position.Target.TOP_LEFT) {
+            return pos.resolve(PropertyHelper.vectorOrThrow(size(), Vec2i.class));
+        }
+        return pos;
     }
 
     default @NotNull Margin margin() {

@@ -25,6 +25,7 @@ import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.neo.render.engine.pipeline.RenderPipeline;
 import me.combimagnetron.sunscreen.neo.render.engine.pipeline.RenderThreadPoolHandler;
 import me.combimagnetron.sunscreen.neo.session.Session;
+import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import me.combimagnetron.sunscreen.util.IdentifierHolder;
 import me.combimagnetron.sunscreen.util.Scheduler;
@@ -33,6 +34,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import me.combimagnetron.sunscreen.util.helper.ElementSizeSeeder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +79,7 @@ public class ActiveMenu implements IdentifierHolder {
         template.build(menuRoot);
         loadComponents();
         intermediate.gameTime(user);
+        ElementSizeSeeder.seedMenuTree(menuRoot.elementLikes(), loadedTheme());
         for (ElementLike<?> elementLike : menuRoot.elementLikes()) {
             if (elementLike instanceof GenericInteractableModernElement<?, ?, ?> interactableModernElement) {
                 interactableModernElement.inputHandler(inputHandler);
@@ -92,6 +99,14 @@ public class ActiveMenu implements IdentifierHolder {
         }
     }
 
+    private @Nullable ModernTheme loadedTheme() {
+        return loadedComponents.values().stream()
+            .filter(ModernTheme.class::isInstance)
+            .map(ModernTheme.class::cast)
+            .findFirst()
+            .orElse(null);
+    }
+
     public @NotNull MenuRoot root() {
         return menuRoot;
     }
@@ -109,6 +124,7 @@ public class ActiveMenu implements IdentifierHolder {
     }
 
     public @NotNull ActiveMenu add(@NotNull ElementLike<?> @NotNull... elementLikes) {
+        ElementSizeSeeder.seedMenuTree(Arrays.asList(elementLikes), loadedTheme());
         renderPipeline.submit(elementLikes);
         return this;
     }

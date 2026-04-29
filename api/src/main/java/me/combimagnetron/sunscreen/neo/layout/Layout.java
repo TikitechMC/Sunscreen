@@ -181,7 +181,7 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
         private void handleElement(@NotNull ModernElement<?, Canvas> elementLike) {
             Vec2i vecPos = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
             Vec2i layoutVecPos = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
-            elementLike.position(Position.fixed(vecPos.add(layoutVecPos)));
+            elementLike.position(Position.fixed(vecPos.add(layoutVecPos)).target(elementLike.position().target()));
             if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) return;
             interactableModernElement.inputHandler(handler);
         }
