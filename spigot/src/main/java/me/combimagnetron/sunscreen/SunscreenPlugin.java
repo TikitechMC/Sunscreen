@@ -13,6 +13,7 @@ import me.combimagnetron.sunscreen.util.FileProvider;
 import org.apache.commons.io.IOUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import revxrsal.commands.Lamp;
 import revxrsal.commands.bukkit.BukkitLamp;
@@ -27,7 +28,7 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
     private static final Identifier FONT_ID = Identifier.of("sunscreen", "font/minecraft");
     private static final Identifier SMALL_FONT_ID = Identifier.of("sunscreen", "font/sunburned");
     private Lamp<BukkitCommandActor> lamp;
-    private SunscreenLibrary<SunscreenPlugin, Player> library;
+    private SunscreenLibrary<SunscreenPlugin, Player, ItemStack> library;
     private UserManager userManager;
 
 
@@ -116,6 +117,7 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
 
     private void commands() {
         lamp.register(new SunscreenCommand());
+        lamp.register(new TestCommand());
     }
 
     @Override

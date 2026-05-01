@@ -2,6 +2,9 @@ package me.combimagnetron.sunscreen.neo.render.engine.phase;
 
 import com.google.common.graph.Traverser;
 import it.unimi.dsi.fastutil.Pair;
+import me.combimagnetron.passport.internal.entity.impl.display.Display;
+import me.combimagnetron.passport.internal.entity.metadata.type.Quaternion;
+import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
@@ -9,6 +12,7 @@ import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.GraphicLike;
+import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.property.*;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
@@ -18,6 +22,7 @@ import me.combimagnetron.sunscreen.neo.render.Viewport;
 import me.combimagnetron.sunscreen.neo.render.engine.cache.RenderCache;
 import me.combimagnetron.sunscreen.neo.render.engine.encode.MapEncoderFactory;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.EncodedRenderChunk;
+import me.combimagnetron.sunscreen.neo.render.engine.grid.ItemRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.grid.ProcessedRenderChunk;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
@@ -127,13 +132,27 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                 canvasses.computeIfAbsent(meta, _ -> Canvas.empty(canvasSize));
                 for (ModernElement<?, ?> elementLike : entry.getValue()) {
                     if (!(elementLike instanceof ModernElement<?, ?> element)) continue;
-                    GraphicLike<?> graphics = element.render(Size.fixed(canvasSize), renderContext);
                     Vec2i positionVec = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
-                    canvasses.computeIfPresent(meta,
-                        (_, canvas) -> canvas.place(graphics.bufferedColorSpace(), positionVec));
+                    GraphicLike<?> graphics = element.render(Size.fixed(canvasSize), renderContext);
+                    switch (graphics) {
+                        case Canvas toPlace -> canvasses.computeIfPresent(meta,
+                            (_, canvas) -> canvas.place(toPlace.bufferedColorSpace(), positionVec));
+                        case Item<?> item -> {
+                            RenderCache cache = renderContext.renderCache();
+                            Vec3f gridPos = vec3f(item);
+                            Integer id = cache.byPosAndScale(scale, gridPos);
+                            boolean exists = id != null;
+                            Rotation rotation = element.rotation();
+                            item = item.transform(item.transformation().rotationLeft(rotation.quaternion()).scale(Vector3d.vec3(scale.floatValue())));
+                            if (!exists) {
+                                cache.next(new ItemRenderChunk(null, gridPos, scale, item.hashCode()));
+                                SunscreenLibrary.library().intermediate().spawnItemDisplay(user, new Location(user.eyeLocation().x(), user.eyeLocation().y() - 1, user.eyeLocation().z()), (Item<Object>) item, positionVec);
+                            }
+                        }
+                        default -> {}
+                    }
                 }
             }
-            
 
             RenderCache cache = renderContext.renderCache();
             for (BigDecimal scale : cache.scales()) {
@@ -145,10 +164,22 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             return Pair.of(new Encode(user), renderContext.withStart(canvasses));
         }
 
+        private static @NonNull Vec3f vec3f(Item<?> item) {
+            Display.Transformation transformation = item.transformation();
+            Quaternion rotation;
+            if (transformation == null) {
+                rotation = Quaternion.of(item.hashCode(), item.hashCode(), item.hashCode(), 0);
+            } else {
+                rotation = item.transformation().rotationLeft();
+            }
+            return Vec3f.of(rotation.x(), rotation.y(), rotation.z());
+        }
+
     }
 
     class Encode implements RenderPhase<Send> {
         private static final int CHUNK_SIZE = 128;
+        private static final float TARGET_ASPECT_INVERTED = 9.0f / 16.0f;
         private final SunscreenUser<?> user;
 
         public Encode(SunscreenUser<?> user) {
@@ -168,19 +199,32 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                 BigDecimal scale = meta.bigDecimal();
                 Canvas canvas = entry.getValue();
                 Vec2i canvasSize = canvas.size();
+                Vec2i viewport = user.screenInfo().viewport().currentView();
                 int chunksX = canvasSize.x() / CHUNK_SIZE;
                 int chunksY = canvasSize.y() / CHUNK_SIZE;
                 RenderCache cache = renderContext.renderCache();
 
+                float horizontalFactor = scale.floatValue() * 2.0f;
+                float verticalFactor = scale.floatValue() * 2.0f * ((float) viewport.y() /viewport.x());
+
                 for (int x = 0; x < chunksX; x++) {
                     for (int y = 0; y < chunksY; y++) {
+                        float centerX = x * CHUNK_SIZE + CHUNK_SIZE * 0.5f;
+                        float centerY = y * CHUNK_SIZE + CHUNK_SIZE * 0.5f;
+
+                        float normalizedX = centerX / (viewport.x() * 0.5f) - 1.0f;
+                        float normalizedY = 1.0f - centerY / (viewport.y() * 0.5f);
+
+                        float positionX = -normalizedX * horizontalFactor;
+                        float positionY = normalizedY * verticalFactor;
+
                         int startX = x * CHUNK_SIZE;
                         int startY = y * CHUNK_SIZE;
                         int width = Math.min(CHUNK_SIZE, canvasSize.x() - startX);
                         int height = Math.min(CHUNK_SIZE, canvasSize.y() - startY);
 
                         BufferedColorSpace sub = canvas.bufferedColorSpace().sub(startX, startY, width, height);
-                        Vec3f gridPos = Vec3f.of((float) (-1 * (x - 2.62)), (float) (-1 *(y - 1.265)), meta.z());
+                        Vec3f gridPos = Vec3f.of(positionX, positionY, meta.z());
                         ProcessedRenderChunk newChunk = new ProcessedRenderChunk(sub, gridPos, scale);
                         Integer id = cache.byPosAndScale(scale, gridPos);
                         boolean exists = id != null;
@@ -189,7 +233,6 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                             changedChunks.add(newChunk);
 
                         }
-
                     }
                 }
             }

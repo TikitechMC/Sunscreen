@@ -9,7 +9,9 @@ import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.protocol.SpigotPlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.session.SessionHandler;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -17,7 +19,7 @@ import org.slf4j.Logger;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-public class SunscreenLibrarySpigot implements SunscreenLibrary<SunscreenPlugin, Player> {
+public class SunscreenLibrarySpigot implements SunscreenLibrary<SunscreenPlugin, Player, ItemStack> {
     private final SpigotPlatformProtocolIntermediate intermediate = new SpigotPlatformProtocolIntermediate();
     private final SessionHandler sessionHandler = new SessionHandler();
     private final PlaceholderRegistry placeholderRegistry = new PlaceholderRegistry.Impl();
@@ -88,7 +90,7 @@ public class SunscreenLibrarySpigot implements SunscreenLibrary<SunscreenPlugin,
     }
 
     @Override
-    public @NotNull PlatformProtocolIntermediate intermediate() {
+    public @NotNull PlatformProtocolIntermediate<ItemStack> intermediate() {
         return intermediate;
     }
 

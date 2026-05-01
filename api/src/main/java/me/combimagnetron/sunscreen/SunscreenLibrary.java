@@ -14,9 +14,9 @@ import org.slf4j.Logger;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-public interface SunscreenLibrary<T, P extends Audience> {
-    static <T, P extends Audience> SunscreenLibrary<T, P> library() {
-        return (SunscreenLibrary<T, P>) Holder.INSTANCE;
+public interface SunscreenLibrary<T, P extends Audience, I> {
+    static <T, P extends Audience, I> SunscreenLibrary<T, P, I> library() {
+        return (SunscreenLibrary<T, P, I>) Holder.INSTANCE;
     }
 
     Passport<T> passport();
@@ -33,10 +33,10 @@ public interface SunscreenLibrary<T, P extends Audience> {
 
     @NotNull Logger logger();
 
-    @NotNull PlatformProtocolIntermediate intermediate();
+    @NotNull PlatformProtocolIntermediate<I> intermediate();
 
     final class Holder {
-        public static SunscreenLibrary<?, ? extends Audience> INSTANCE = null;
+        public static SunscreenLibrary<?, ? extends Audience, ?> INSTANCE = null;
 
         static {
             ElementConstructionProvider.defaults();

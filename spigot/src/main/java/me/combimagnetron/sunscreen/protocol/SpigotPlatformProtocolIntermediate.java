@@ -4,10 +4,13 @@ import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.protocol.attribute.AttributeOperation;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemAttributeModifiers;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemEquippable;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemModel;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemTooltipDisplay;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
@@ -20,17 +23,23 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
+import com.github.retrooper.packetevents.util.Dummy;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import me.combimagnetron.passport.internal.entity.Entity;
+import me.combimagnetron.passport.internal.entity.impl.display.Display;
+import me.combimagnetron.passport.internal.entity.impl.display.ItemDisplay;
 import me.combimagnetron.passport.internal.entity.impl.passive.horse.Horse;
 import me.combimagnetron.passport.internal.entity.impl.tile.ItemFrame;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.internal.network.Connection;
 import me.combimagnetron.passport.user.User;
+import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.input.context.TextInputContext;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
@@ -44,7 +53,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class SpigotPlatformProtocolIntermediate implements PlatformProtocolIntermediate {
+public class SpigotPlatformProtocolIntermediate implements PlatformProtocolIntermediate<org.bukkit.inventory.ItemStack> {
     private static final WrapperPlayServerUpdateAttributes.PropertyModifier MODIFIER = new WrapperPlayServerUpdateAttributes.PropertyModifier(UUID.randomUUID(), 0, WrapperPlayServerUpdateAttributes.PropertyModifier.Operation.MULTIPLY_BASE);
     protected final Table<UUID, Integer, Object> entities = HashBasedTable.create();
     private EquipmentSlot equipmentSlot = EquipmentSlot.BODY;
@@ -144,9 +153,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         WrapperPlayServerPlayerInfoUpdate infoUpdate = new WrapperPlayServerPlayerInfoUpdate(WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER, new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(profile, false, 0, GameMode.CREATIVE, null, null, 0, true));
         WrapperPlayServerBlockChange blockChange = new WrapperPlayServerBlockChange(new Vector3i((int) player.getX(), (int) player.getY() + 1, (int) player.getZ()), WrappedBlockState.getDefaultState(StateTypes.EXPOSED_COPPER_GRATE));
         WrapperPlayServerEntityTeleport positionSync = new WrapperPlayServerEntityTeleport(-10_000, new com.github.retrooper.packetevents.util.Vector3d(player.getX(), player.getY(), player.getZ()), com.github.retrooper.packetevents.util.Vector3d.zero(), player.getYaw(), player.getPitch(), RelativeFlag.NONE, player.isOnGround());
-        user.connection().send(new WrapperPlayServerEntityEffect(player.getEntityId(), PotionTypes.INVISIBILITY, 255, -1, ((byte) 0)));
-        // todo: fix invis potion
-        player.setInvisible(true);
+        user.connection().send(new WrapperPlayServerEntityMetadata(player.getEntityId(), List.of(new EntityData<>(0, EntityDataTypes.BYTE, (byte) 0x20))));
         sendItems(user);
         user.connection().send(new WrapperPlayServerBundle());
         user.connection().send(infoUpdate);
@@ -163,8 +170,41 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
     }
 
     @Override
+    public EntityReference<?> spawnItemDisplay(@NotNull SunscreenUser<?> user, @NotNull Location location, @NotNull Item<org.bukkit.inventory.ItemStack> item, @NotNull Vec2i screenPos) {
+        ItemDisplay display = ItemDisplay.itemDisplay(loc2Vec3(location));
+        Display.Transformation transformation = item.transformation();
+        if (transformation == null) transformation = Display.Transformation.transformation();
+        transformation = transformation.translation(Vector3d.vec3(960 - screenPos.x(), -15_000 + 540 - screenPos.y(), 0));
+        transformation = transformation.scale(transformation.scale().mul(100));
+        display.transformation(transformation);
+        display.rotation(Vector3d.vec3(0));
+        display.displayType(ItemDisplay.DisplayType.FIXED);
+        display.nameVisible(false);
+        display.item(SpigotConversionUtil.fromBukkitItemStack(item.item()));
+        user.show(display);
+        entities.put(user.uniqueIdentifier(), display.id().intValue(), display);
+        return null;
+    }
+
+    @Override
     public void sendItems(@NotNull SunscreenUser<?> user) {
-        ItemStack stack = ItemStack.builder().type(ItemTypes.TRIDENT).component(ComponentTypes.ITEM_NAME, Component.empty()).component(ComponentTypes.ITEM_MODEL, new ItemModel(ResourceLocation.minecraft("air"))).build();
+        ItemStack stack =
+            ItemStack.builder().type(ItemTypes.TRIDENT)
+                .component(ComponentTypes.ATTRIBUTE_MODIFIERS,
+                    new ItemAttributeModifiers(
+                        List.of(
+                            new ItemAttributeModifiers.ModifierEntry(
+                                Attributes.ATTACK_SPEED,
+                                new ItemAttributeModifiers.Modifier(UUID.randomUUID(), "a", -1D, AttributeOperation.MULTIPLY_TOTAL),
+                                ItemAttributeModifiers.EquipmentSlotGroup.ANY
+                            )
+                        )
+                    )
+                )
+                .component(ComponentTypes.TOOLTIP_DISPLAY, new ItemTooltipDisplay(true, Set.of()))
+                .component(ComponentTypes.ITEM_NAME, Component.empty())
+                .component(ComponentTypes.ITEM_MODEL, new ItemModel(ResourceLocation.minecraft("air"))).build();
+        hideTooltip(user, stack);
         WrapperPlayServerWindowItems items = new WrapperPlayServerWindowItems(0, 0, Collections.nCopies(44, stack), stack);
         WrapperPlayServerSetSlot slot = new WrapperPlayServerSetSlot(0, 0, 45, stack);
         user.connection().send(slot);
@@ -205,7 +245,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         }
         user.connection().send(new WrapperPlayServerDestroyEntities(-10_000));
         trackedEntities.clear();
-        player.setInvisible(false);
+        user.connection().send(new WrapperPlayServerEntityMetadata(player.getEntityId(), List.of(new EntityData<>(0, EntityDataTypes.BYTE, (byte) 0))));
         user.connection().send(new WrapperPlayServerPlayerPositionAndLook(user.position().x(), user.position().y(), user.position().z(), (float) initialRotation.x(), (float) initialRotation.y(), (byte)0, 0, false));
         user.connection().send(timeUpdate);
         user.connection().send(gameState);
@@ -239,13 +279,17 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         TextInputContext context = user.session().menu().inputHandler().context(TextInputContext.class);
         String value = "";//context.stream().value();
         Component name = Component.text(value);
+        ItemStack itemStack = ItemStack.builder()
+            .type(ItemTypes.PAPER)
+            .component(ComponentTypes.ITEM_MODEL, new ItemModel(ResourceLocation.minecraft("air")))
+            .component(ComponentTypes.ITEM_NAME, name)
+            .amount(1)
+            .build();
+        hideTooltip(user, itemStack);
         ArrayList<ItemStack> items = new ArrayList<>(
-            List.of(ItemStack.builder()
-                .type(ItemTypes.PAPER)
-                .component(ComponentTypes.ITEM_MODEL, new ItemModel(ResourceLocation.minecraft("air")))
-                .component(ComponentTypes.ITEM_NAME, name)
-                .amount(1)
-                .build())
+            List.of(
+                itemStack
+            )
         );
         items.addAll(Collections.nCopies(38, ItemStack.EMPTY));
         WrapperPlayServerWindowItems windowItems = new WrapperPlayServerWindowItems(-10_000, 0, items, null);
@@ -276,8 +320,18 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         }
     }
 
-    private static int protocolVersion(Player player) {
+    private static int protocolVersion(@NotNull Player player) {
         return PacketEvents.getAPI().getPlayerManager().getClientVersion(player).getProtocolVersion();
+    }
+
+    private void hideTooltip(@NotNull SunscreenUser<?> user, @NotNull ItemStack itemStack) {
+        Player player = (Player) user.platformSpecificPlayer();
+        int protocolVersion = protocolVersion(player);
+        if (protocolVersion >= ClientVersion.V_1_21_6.getProtocolVersion()) {
+            itemStack.setComponent(ComponentTypes.TOOLTIP_DISPLAY, new ItemTooltipDisplay(true, Set.of()));
+        } else {
+            itemStack.setComponent(ComponentTypes.HIDE_TOOLTIP, Dummy.DUMMY);
+        }
     }
 
     private static @NotNull WrapperPlayServerEntityEquipment horseEquipment(@NotNull String texturePath, int id, EquipmentSlot equipmentSlot) {

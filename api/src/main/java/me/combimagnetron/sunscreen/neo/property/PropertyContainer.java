@@ -61,6 +61,10 @@ public interface PropertyContainer<R> {
         return propOrNull(Decorator.class);
     }
 
+    default @NotNull Rotation rotation() {
+        return propOr(Rotation.class, Rotation.zero());
+    }
+
     default @NotNull R size(@NotNull Size size) {
         return property(size);
     }
@@ -91,6 +95,10 @@ public interface PropertyContainer<R> {
 
     default @NotNull R decorator(@NotNull Decorator<?> decorator) {
         return property(decorator);
+    }
+
+    default @NotNull R rotation(@NotNull Rotation rotation) {
+        return property(rotation);
     }
 
 }

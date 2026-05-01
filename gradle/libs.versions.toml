@@ -39,6 +39,7 @@ jackson = { group = "com.fasterxml.jackson.core", name = "jackson-databind", ver
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 annotations = { group = "org.jetbrains", name = "annotations", version = "26.0.2" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version = "5.3.2" }
+joml = { group = "org.joml", name = "joml", version = "1.10.8" }
 
 # --- Build Logic Hacks ---
 build-system-license = { group = "com.github.hierynomus.license", name = "com.github.hierynomus.license.gradle.plugin", version = "0.16.1" }
@@ -47,5 +48,5 @@ build-system-license-base = { group = "com.github.hierynomus.license-base", name
 [bundles]
 minecraft = ["creative-api", "creative-serializer-minecraft"]
 adventure = ["adventure-api", "adventure-gson", "adventure-plain"]
-utils = ["guava", "commons3", "commons-io", "caffeine", "fastutil", "jackson", "commons-compress", "jackson-xml", "annotations", "okhttp"]
+utils = ["guava", "commons3", "commons-io", "caffeine", "fastutil", "jackson", "commons-compress", "jackson-xml", "annotations", "okhttp", "joml"]
 lamp-command = ["lamp-common", "lamp-paper", "lamp-minestom"]

@@ -43,7 +43,7 @@ public class ProtocolListener implements PacketListener {
         }
         SunscreenUser<?> user = userOptional.get();
         switch (packetReceiveEvent.getPacketType()) {
-            case PacketType.Play.Client.PLAYER_ROTATION -> handleRotation(new WrapperPlayClientPlayerRotation(packetReceiveEvent), user);
+            case PacketType.Play.Client.PLAYER_ROTATION -> handleRotation(packetReceiveEvent, user);
             case PacketType.Play.Client.INTERACT_ENTITY -> handleInteractEntity(packetReceiveEvent, user);
             case PacketType.Play.Client.PLAYER_INPUT -> handleSneak(new WrapperPlayClientPlayerInput(packetReceiveEvent), user);
             case PacketType.Play.Client.PLAYER_DIGGING -> handleDigging(packetReceiveEvent, user);
@@ -193,8 +193,10 @@ public class ProtocolListener implements PacketListener {
         packetReceiveEvent.setCancelled(true);
     }
 
-    private void handleRotation(WrapperPlayClientPlayerRotation wrapperPlayClientPlayerRotation, SunscreenUser<?> user) {
+    private void handleRotation(PacketReceiveEvent event, SunscreenUser<?> user) {
+        WrapperPlayClientPlayerRotation wrapperPlayClientPlayerRotation = new WrapperPlayClientPlayerRotation(event);
         if (!inMenu(user)) return;
+        event.setCancelled(true);
         final Session session = user.session();
         if (session == null) return;
         final InputHandler inputHandler = session.menu().inputHandler();

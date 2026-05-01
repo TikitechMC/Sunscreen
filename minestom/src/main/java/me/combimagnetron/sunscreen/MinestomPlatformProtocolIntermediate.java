@@ -4,6 +4,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import me.combimagnetron.passport.internal.entity.impl.tile.ItemFrame;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
+import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
@@ -34,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class MinestomPlatformProtocolIntermediate implements PlatformProtocolIntermediate {
+public class MinestomPlatformProtocolIntermediate implements PlatformProtocolIntermediate<ItemStack> {
     private final static AttributeModifier ATTRIBUTE_MODIFIER = new AttributeModifier(Key.key("sunscreen:attribute"), 0, AttributeOperation.ADD_MULTIPLIED_BASE);
     private final Table<UUID, Integer, Object> entities = HashBasedTable.create();
 
@@ -115,6 +117,11 @@ public class MinestomPlatformProtocolIntermediate implements PlatformProtocolInt
         BlockChangePacket blockChangePacket = new BlockChangePacket(toMinestom(user.position()).add(0, 1, 0), Block.WEATHERED_COPPER_GRATE);
         ChangeGameStatePacket changeGameStatePacket = new ChangeGameStatePacket(ChangeGameStatePacket.Reason.CHANGE_GAMEMODE, 0);
         player.getPlayerConnection().sendPackets(entityEffectPacket, playerInfoUpdatePacket, spawnEntityPacket, metaDataPacket, entityRotationPacket, cameraPacket, blockChangePacket, changeGameStatePacket);
+        return null;
+    }
+
+    @Override
+    public EntityReference<?> spawnItemDisplay(@NotNull SunscreenUser<?> user, @NotNull Location location, @NotNull Item<ItemStack> item, @NotNull Vec2i screenPos) {
         return null;
     }
 
