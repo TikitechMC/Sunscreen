@@ -200,7 +200,8 @@ public class ProtocolListener implements PacketListener {
         final Session session = user.session();
         if (session == null) return;
         final InputHandler inputHandler = session.menu().inputHandler();
-        float yaw = wrapperPlayClientPlayerRotation.getYaw();
+        float rawYaw = wrapperPlayClientPlayerRotation.getYaw();
+        float yaw = ((rawYaw + 360/2f) % 360 + 360) % 360 - 360/2f;
         float pitch = wrapperPlayClientPlayerRotation.getPitch();
         inputHandler.peek(MouseInputContext.class, old -> old.withPosition(RotationHelper.convert(yaw, pitch, user.screenInfo())), user);
     }
