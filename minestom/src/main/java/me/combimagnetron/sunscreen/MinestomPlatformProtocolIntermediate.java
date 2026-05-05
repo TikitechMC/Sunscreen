@@ -34,11 +34,17 @@ import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class MinestomPlatformProtocolIntermediate implements PlatformProtocolIntermediate<ItemStack> {
     private final static AttributeModifier ATTRIBUTE_MODIFIER = new AttributeModifier(Key.key("sunscreen:attribute"), 0, AttributeOperation.ADD_MULTIPLIED_BASE);
     private final Table<UUID, Integer, Object> entities = HashBasedTable.create();
+
+    @Override
+    public void serverToClient(@NotNull SunscreenUser<?> user, @NotNull ByteBuffer payloadPacket) {
+        // Minestom native UI transport is not implemented in this module.
+    }
 
     @Override
     public EntityReference<?> spawnAndRideHorse(@NotNull SunscreenUser<?> user, @NotNull Location location) {

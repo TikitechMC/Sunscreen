@@ -25,3 +25,9 @@ application {
 tasks.processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+}

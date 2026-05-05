@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Position> implements EditorProperty<Vec2i, Position, SelectorInputContext.ValueInnerContext> {
@@ -16,6 +17,33 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
     private static final Position ZERO = Position.fixed(Vec2i.zero());
 
     private final Map<RelativeMeasure.Axis2d, RelativeMeasure.RelativeBuilder<Size>> axisMap = new LinkedHashMap<>();
+    private Target target = Target.TOP_LEFT;
+
+    /**
+     * Anchor on the element box: position value is the point named by the constant; {@link #resolve(Vec2i)} returns top-left
+     * by subtracting {@link #offset(Vec2i)} from that point.
+     */
+    public enum Target {
+        TOP_LEFT(s -> Vec2i.zero()),
+        TOP_CENTER(s -> Vec2i.of(s.x() / 2, 0)),
+        TOP_RIGHT(s -> Vec2i.of(s.x(), 0)),
+        LEFT_CENTER(s -> Vec2i.of(0, s.y() / 2)),
+        CENTER(s -> Vec2i.of(s.x() / 2, s.y() / 2)),
+        RIGHT_CENTER(s -> Vec2i.of(s.x(), s.y() / 2)),
+        BOTTOM_LEFT(s -> Vec2i.of(0, s.y())),
+        BOTTOM_CENTER(s -> Vec2i.of(s.x() / 2, s.y())),
+        BOTTOM_RIGHT(s -> Vec2i.of(s.x(), s.y()));
+
+        private final Function<Vec2i, Vec2i> anchorToTopLeftOffset;
+
+        Target(@NotNull Function<Vec2i, Vec2i> anchorToTopLeftOffset) {
+            this.anchorToTopLeftOffset = anchorToTopLeftOffset;
+        }
+
+        public @NotNull Vec2i offset(@NotNull Vec2i elementSize) {
+            return anchorToTopLeftOffset.apply(elementSize);
+        }
+    }
 
     public static Position nil() {
         return ZERO;
@@ -44,6 +72,20 @@ public final class Position extends RelativeMeasure.Vec2iRelativeMeasureGroup<Po
 
     public static @NotNull Position supplied(@NotNull Supplier<Vec2i> supplier) {
         return new Position(supplier);
+    }
+
+    public @NotNull Position target(@NotNull Target target) {
+        this.target = target;
+        return this;
+    }
+
+    public @NotNull Target target() {
+        return target;
+    }
+
+    public @NotNull Vec2i resolve(@NotNull Vec2i size) {
+        Vec2i value = value();
+        return value.sub(target.offset(size));
     }
 
     @Override

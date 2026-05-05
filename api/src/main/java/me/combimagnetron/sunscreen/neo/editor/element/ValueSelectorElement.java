@@ -87,7 +87,7 @@ public class ValueSelectorElement extends GenericInteractableModernElement<Value
         Vec2i relativePos = cursor.sub(position);
         previous = hovered;
         hovered = Section.at(relativePos);
-        if (hovered != previous) {
+        if (hovered != previous || hovered == null) {
             startPos = null;
         }
         if (startPos == null) {

@@ -85,7 +85,8 @@ public class SelectorElement extends GenericInteractableModernElement<SelectorEl
         }
         style = CursorStyle.click();
         handler.cursor(CursorStyle.click());
-        Vec2i relative = cursor.sub(position().value());
+        Vec2i size = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
+        Vec2i relative = cursor.sub(position().resolve(size));
         int index = indexAt(relative);
         hovered = index;
         if (index == -1)

@@ -11,30 +11,28 @@ import me.combimagnetron.sunscreen.neo.element.GenericInteractableModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.input.InputHandler;
-import me.combimagnetron.sunscreen.neo.input.context.InputContext;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.input.context.ScrollInputContext;
+import me.combimagnetron.sunscreen.neo.input.context.TextInputContext;
 import me.combimagnetron.sunscreen.neo.layout.Layout;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponent;
 import me.combimagnetron.sunscreen.neo.loader.MenuComponentLoaderContext;
 import me.combimagnetron.sunscreen.neo.property.Position;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
-import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.neo.render.engine.pipeline.RenderPipeline;
 import me.combimagnetron.sunscreen.neo.render.engine.pipeline.RenderThreadPoolHandler;
 import me.combimagnetron.sunscreen.neo.session.Session;
+import me.combimagnetron.sunscreen.neo.theme.ModernTheme;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import me.combimagnetron.sunscreen.util.IdentifierHolder;
-import me.combimagnetron.sunscreen.util.Scheduler;
-import org.checkerframework.checker.units.qual.A;
+import me.combimagnetron.sunscreen.util.helper.ElementSizeSeeder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ActiveMenu implements IdentifierHolder {
@@ -42,6 +40,11 @@ public class ActiveMenu implements IdentifierHolder {
     private final Vector3d initialRotation;
     private final Identifier identifier;
     private final SunscreenUser<?> user;
+    /**
+     * When true, the client negotiated native UI and we skip spectate, horse, and map packets; the server still runs
+     * the render loop but streams rasters instead of map updates.
+     */
+    private final boolean useNativeClientPath;
     private RenderPipeline renderPipeline;
     private MenuRoot menuRoot = new MenuRoot();
     private InputHandler inputHandler = InputHandler.defaults(this);
@@ -50,12 +53,17 @@ public class ActiveMenu implements IdentifierHolder {
         this.initialRotation = user.rotation();
         this.user = user;
         this.identifier = identifier;
+        this.useNativeClientPath = user.useNativeUi();
         PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
-        intermediate.gameTime(user);
+        if (!useNativeClientPath) {
+            intermediate.gameTime(user);
+        }
         show(template);
-        Location location = user.eyeLocation();
-        intermediate.spawnAndSpectateDisplay(user, location);
-        intermediate.spawnAndRideHorse(user, user.eyeLocation());
+        if (!useNativeClientPath) {
+            Location location = user.eyeLocation();
+            intermediate.spawnAndSpectateDisplay(user, location);
+            intermediate.spawnAndRideHorse(user, user.eyeLocation());
+        }
         SunscreenLibrary.library().sessionHandler().session(new Session(this, user));
     }
 
@@ -68,11 +76,13 @@ public class ActiveMenu implements IdentifierHolder {
             inputHandler.close();
             inputHandler = InputHandler.defaults(this);
             inputHandler.cursor(CursorStyle.pointer());
-            intermediate.removeMaps(user);
+            if (!useNativeClientPath) {
+                intermediate.removeMaps(user);
+            }
         }
         template.build(menuRoot);
         loadComponents();
-        intermediate.gameTime(user);
+        ElementSizeSeeder.seedMenuTree(menuRoot.elementLikes(), loadedTheme());
         for (ElementLike<?> elementLike : menuRoot.elementLikes()) {
             if (elementLike instanceof GenericInteractableModernElement<?, ?, ?> interactableModernElement) {
                 interactableModernElement.inputHandler(inputHandler);
@@ -92,6 +102,14 @@ public class ActiveMenu implements IdentifierHolder {
         }
     }
 
+    private @Nullable ModernTheme loadedTheme() {
+        return loadedComponents.values().stream()
+            .filter(ModernTheme.class::isInstance)
+            .map(ModernTheme.class::cast)
+            .findFirst()
+            .orElse(null);
+    }
+
     public @NotNull MenuRoot root() {
         return menuRoot;
     }
@@ -109,6 +127,7 @@ public class ActiveMenu implements IdentifierHolder {
     }
 
     public @NotNull ActiveMenu add(@NotNull ElementLike<?> @NotNull... elementLikes) {
+        ElementSizeSeeder.seedMenuTree(Arrays.asList(elementLikes), loadedTheme());
         renderPipeline.submit(elementLikes);
         return this;
     }
@@ -130,22 +149,83 @@ public class ActiveMenu implements IdentifierHolder {
     }
 
     public @NotNull ActiveMenu cursor(@NotNull CursorStyle style) {
+        if (useNativeClientPath) {
+            // TODO(?)
+            return this;
+        }
         PlatformProtocolIntermediate protocolIntermediate = SunscreenLibrary.library().intermediate();
         protocolIntermediate.setHorseArmor(user, style.asset());
         return this;
+    }
+
+
+    public void openVanillaTextCapture(@NotNull SunscreenUser<?> user) {
+        if (useNativeClientPath) {
+            return;
+        }
+        SunscreenLibrary.library().intermediate().openEmptyAnvil(user);
     }
 
     public @NotNull SunscreenUser<?> user() {
         return user;
     }
 
+    /**
+     * When true, cursor position must come from native client packets (e.g. raster UI), not from player look / map bridge.
+     */
+    public boolean useNativeClientPath() {
+        return useNativeClientPath;
+    }
+
+    public void acceptNativeClientMouse(int lx, int ly, boolean left, boolean right) {
+        if (!useNativeClientPath) {
+            return;
+        }
+        inputHandler.peek(
+            MouseInputContext.class,
+            old -> new MouseInputContext(old.active(), right, left, Vec2i.of(lx, ly)),
+            user
+        );
+    }
+
+    public void acceptNativeClientScroll(float dy) {
+        if (!useNativeClientPath) {
+            return;
+        }
+        inputHandler.peek(
+            ScrollInputContext.class,
+            old -> new ScrollInputContext(true, dy, old.lastSlot()),
+            user
+        );
+    }
+
+    public void acceptNativeClientTextAppend(@NotNull String chars) {
+        if (!useNativeClientPath) {
+            return;
+        }
+        inputHandler.peek(TextInputContext.class, old -> old.append(chars), user);
+    }
+
+    public void acceptNativeClientTextBackspace() {
+        if (!useNativeClientPath) {
+            return;
+        }
+        inputHandler.peek(TextInputContext.class, TextInputContext::deleteLastCodePoint, user);
+    }
+
     public void close() {
         SunscreenLibrary.library().sessionHandler().remove(user);
-        renderPipeline.stop();
+        if (renderPipeline != null) {
+            renderPipeline.stop();
+        }
         loadedComponents.clear();
         inputHandler.close();
         PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
-        intermediate.removeMaps(user);
+        if (!useNativeClientPath) {
+            intermediate.removeMaps(user);
+        } else {
+            intermediate.serverCloseMenu(user);
+        }
         intermediate.reset(user, initialRotation);
     }
 

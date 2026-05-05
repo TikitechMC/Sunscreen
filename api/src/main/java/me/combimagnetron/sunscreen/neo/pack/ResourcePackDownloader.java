@@ -27,7 +27,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class ResourcePackDownloader {
-    private static final Path CACHE = SunscreenLibrary.library().path().resolve(".cache", "pack.zip");
+    private static final Path CACHE = SunscreenLibrary.library().path().resolve(".cache").resolve("pack.zip");
 
     public static void download(@NotNull String url) throws IOException {
         InputStream in;

@@ -94,15 +94,27 @@ public class ComparisonElement extends GenericInteractableModernElement<Comparis
     @Override
     public @NonNull Canvas render(@NonNull Size property, @Nullable RenderContext context) {
         if (context == null) return Canvas.error(size());
-        if (left == null || right == null || left.size().x() != right.size().x() || left.size().y() != right.size().y()) return Canvas.error(size());
-        final Canvas canvas = Canvas.empty(left.size());
-        final Vec2i size = left.size();
+        if (left == null || right == null) return Canvas.error(size());
+        final Vec2i targetSize = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
+        if (targetSize.x() <= 0 || targetSize.y() <= 0) return Canvas.error(size());
+        final Canvas leftCanvas = left.size().equals(targetSize)
+            ? left
+            : new Canvas(left.bufferedColorSpace().resize(targetSize), left.classpathResource());
+        final Canvas rightCanvas = right.size().equals(targetSize)
+            ? right
+            : new Canvas(right.bufferedColorSpace().resize(targetSize), right.classpathResource());
+        final Canvas canvas = Canvas.empty(targetSize);
+        final Vec2i size = targetSize;
         Vec2i tabSize = Vec2i.of(4, size.y());
         float valueF = (value/100f);
-        canvas.place(left, Vec2i.zero());
-        int section = right.size ().x() - (int) (valueF * right.size().x());
-        canvas.place(right.sub(Vec2i.of(right.size().x() - section, 0), Vec2i.of(section, right.size().y())), Vec2i.of(right.size().x() - section, 0));
-        canvas.place(Canvas.empty(tabSize).fill(Vec2i.zero(), tabSize, Color.of(39, 39, 39)), Vec2i.of((int) (valueF*size.x() - 2), 1));
+        canvas.place(leftCanvas, Vec2i.zero());
+        int section = rightCanvas.size().x() - (int) (valueF * rightCanvas.size().x());
+        canvas.place(
+            rightCanvas.sub(Vec2i.of(rightCanvas.size().x() - section, 0), Vec2i.of(section, rightCanvas.size().y())),
+            Vec2i.of(rightCanvas.size().x() - section, 0)
+        );
+        int tabX = Math.clamp((int) (valueF * size.x() - 2), 0, Math.max(0, size.x() - tabSize.x()));
+        canvas.place(Canvas.empty(tabSize).fill(Vec2i.zero(), tabSize, Color.of(39, 39, 39)), Vec2i.of(tabX, 1));
         return canvas;
     }
 

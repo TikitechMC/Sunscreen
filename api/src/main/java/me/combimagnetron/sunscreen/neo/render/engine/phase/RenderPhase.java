@@ -8,6 +8,7 @@ import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.SunscreenLibrary;
+import me.combimagnetron.sunscreen.nativeui.ClientRasterTile;
 import me.combimagnetron.sunscreen.neo.element.ModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.BufferedColorSpace;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
@@ -67,7 +68,7 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                     if (group.value() != null) continue;
                     group.finish(user.screenInfo().viewport());
                 }
-                List<ModernElement<?, ?>> list = elementsByScale.computeIfAbsent(new Meta(scale, z.value()), (_) -> new ArrayList<>());
+                List<ModernElement<?, ?>> list = elementsByScale.computeIfAbsent(new Meta(scale, z.value()), (r) -> new ArrayList<>());
                 list.add(modernElement);
             }
         }
@@ -129,27 +130,34 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
                 BigDecimal scale = meta.bigDecimal();
                 Vec2i viewportVec = viewport.currentView();
                 Vec2i canvasSize = Vec2i.of((viewportVec.x() + 127) & ~127, (viewportVec.y() + 127) & ~127);
-                canvasses.computeIfAbsent(meta, _ -> Canvas.empty(canvasSize));
+                canvasses.computeIfAbsent(meta, m -> Canvas.empty(canvasSize));
                 for (ModernElement<?, ?> elementLike : entry.getValue()) {
                     if (!(elementLike instanceof ModernElement<?, ?> element)) continue;
-                    Vec2i positionVec = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
                     GraphicLike<?> graphics = element.render(Size.fixed(canvasSize), renderContext);
-                    switch (graphics) {
-                        case Canvas toPlace -> canvasses.computeIfPresent(meta,
-                            (_, canvas) -> canvas.place(toPlace.bufferedColorSpace(), positionVec));
-                        case Item<?> item -> {
-                            RenderCache cache = renderContext.renderCache();
-                            Vec3f gridPos = vec3f(item);
-                            Integer id = cache.byPosAndScale(scale, gridPos);
-                            boolean exists = id != null;
-                            Rotation rotation = element.rotation();
-                            item = item.transform(item.transformation().rotationLeft(rotation.quaternion()).scale(Vector3d.vec3(scale.floatValue())));
-                            if (!exists) {
-                                cache.next(new ItemRenderChunk(null, gridPos, scale, item.hashCode()));
-                                SunscreenLibrary.library().intermediate().spawnItemDisplay(user, new Location(user.eyeLocation().x(), user.eyeLocation().y() - 1, user.eyeLocation().z()), (Item<Object>) item, positionVec);
+                    if (user.useNativeUi()) {
+                        Vec2i elementSize = PropertyHelper.vectorOrThrow(elementLike.size(), Vec2i.class);
+                        Vec2i positionVec = elementLike.position().resolve(elementSize);
+                        canvasses.computeIfPresent(meta,
+                            (m, canvas) -> canvas.place(graphics.bufferedColorSpace(), positionVec));
+                    } else {
+                        Vec2i positionVec = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
+                        switch (graphics) {
+                            case Canvas toPlace -> canvasses.computeIfPresent(meta,
+                                (m, canvas) -> canvas.place(toPlace.bufferedColorSpace(), positionVec));
+                            case Item<?> item -> {
+                                RenderCache cache = renderContext.renderCache();
+                                Vec3f gridPos = vec3f(item);
+                                Integer id = cache.byPosAndScale(scale, gridPos);
+                                boolean exists = id != null;
+                                Rotation rotation = element.rotation();
+                                item = item.transform(item.transformation().rotationLeft(rotation.quaternion()).scale(Vector3d.vec3(scale.floatValue())));
+                                if (!exists) {
+                                    cache.next(new ItemRenderChunk(null, gridPos, scale, item.hashCode()));
+                                    SunscreenLibrary.library().intermediate().spawnItemDisplay(user, new Location(user.eyeLocation().x(), user.eyeLocation().y() - 1, user.eyeLocation().z()), (Item<Object>) item, positionVec);
+                                }
                             }
+                            default -> {}
                         }
-                        default -> {}
                     }
                 }
             }
@@ -278,20 +286,42 @@ public interface RenderPhase<N extends RenderPhase<? extends RenderPhase<?>>> {
             RenderCache renderCache = renderContext.renderCache();
             PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
             final Location location = user.eyeLocation();
-            intermediate.bundleDelimiter(user);
-            for (Integer i : renderContext.markedForRemoval()) {
-                renderContext.renderCache().remove(i, user);
+            if (!user.useNativeUi()) {
+                intermediate.bundleDelimiter(user);
             }
-            for (EncodedRenderChunk chunk : chunks) {
-                Integer mapId = renderCache.byPosAndScale(chunk.scale(), chunk.position());
-                if (mapId == null) {
-                    mapId = renderCache.next(chunk);
-                    intermediate.spawnAndFillItemFrame(user, location, chunk.data(), mapId);
+            for (Integer i : renderContext.markedForRemoval()) {
+                if (user.useNativeUi()) {
+                    renderCache.remove(i);
                 } else {
-                    intermediate.updateMap(user, mapId, chunk.data());
+                    renderCache.remove(i, user);
                 }
             }
-            intermediate.bundleDelimiter(user);
+            if (user.useNativeUi()) {
+                List<ClientRasterTile> tiles = new ArrayList<>();
+                for (EncodedRenderChunk chunk : chunks) {
+                    var bcs = chunk.bufferedColorSpace();
+                    int[] src = bcs.buffer();
+                    tiles.add(new ClientRasterTile(chunk.scale(), chunk.position(), bcs.size().x(), bcs.size().y(), src));
+                    Integer mapId = renderCache.byPosAndScale(chunk.scale(), chunk.position());
+                    if (mapId == null) {
+                        renderCache.next(chunk);
+                    }
+                }
+                intermediate.serverSendTiles(user, tiles);
+            } else {
+                for (EncodedRenderChunk chunk : chunks) {
+                    Integer mapId = renderCache.byPosAndScale(chunk.scale(), chunk.position());
+                    if (mapId == null) {
+                        mapId = renderCache.next(chunk);
+                        intermediate.spawnAndFillItemFrame(user, location, chunk.data(), mapId);
+                    } else {
+                        intermediate.updateMap(user, mapId, chunk.data());
+                    }
+                }
+            }
+            if (!user.useNativeUi()) {
+                intermediate.bundleDelimiter(user);
+            }
             renderContext.markedForRemoval().clear();
             return Pair.of(new Empty(), renderContext);
         }

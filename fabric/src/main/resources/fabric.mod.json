@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "sunscreen",
+  "version": "${version}",
+  "name": "Sunscreen",
+  "description": "Create UIs like never seen before, all from within the game!",
+  "authors": [
+    "Combimagnetron"
+  ],
+  "contact": {
+    "homepage": "https://combimagnetron.me"
+  },
+  "license": "MIT",
+  "accessWidener": "sunscreen.accesswidener",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.combimagnetron.sunscreen.fabric.client.SunscreenFabricClientMod"
+    ],
+    "main": [
+      "me.combimagnetron.sunscreen.fabric.SunscreenFabricMod"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "sunscreen.mixins.json",
+      "environment": "server"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.3",
+    "minecraft": ">=${minecraftVersion}",
+    "fabric-api": ">=${fabricModules}"
+  }
+}

@@ -181,7 +181,7 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
         private void handleElement(@NotNull ModernElement<?, Canvas> elementLike) {
             Vec2i vecPos = PropertyHelper.vectorOrThrow(elementLike.position(), Vec2i.class);
             Vec2i layoutVecPos = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
-            elementLike.position(Position.fixed(vecPos.add(layoutVecPos)));
+            elementLike.position(Position.fixed(vecPos.add(layoutVecPos)).target(elementLike.position().target()));
             if (!(elementLike instanceof GenericInteractableModernElement<?,?,?> interactableModernElement)) return;
             interactableModernElement.inputHandler(handler);
         }
@@ -261,9 +261,11 @@ public interface Layout<E extends ModernElement<E, Canvas>> extends ElementConta
             }
             Vec2i calculatedSize = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
             Canvas finalCanvas = Canvas.empty(calculatedSize);
-            Vec2i layoutPosVec = PropertyHelper.vectorOrThrow(position(), Vec2i.class);
+            Vec2i layoutSizeVec = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
+            Vec2i layoutPosVec = position().resolve(layoutSizeVec);
             for (ModernElement<?, Canvas> value : elements.values()) {
-                Vec2i posVec = PropertyHelper.vectorOrThrow(value.position(), Vec2i.class);
+                Vec2i elementSize = PropertyHelper.vectorOrThrow(value.size(), Vec2i.class);
+                Vec2i posVec = value.position().resolve(elementSize);
                 finalCanvas.place(value.render(property, context), posVec.sub(layoutPosVec));
             }
             return finalCanvas;

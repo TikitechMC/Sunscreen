@@ -146,6 +146,9 @@ public class PacketListener {
     private void handleRotation(float yaw, float pitch, SunscreenUser<?> user) {
         final Session session = user.session();
         if (session == null) return;
+        if (session.menu().useNativeClientPath()) {
+            return;
+        }
         final InputHandler inputHandler = session.menu().inputHandler();
         inputHandler.peek(MouseInputContext.class, old -> old.withPosition(RotationHelper.convert(yaw, pitch, user.screenInfo())), user);
     }

@@ -32,6 +32,21 @@ public record TextInputContext(boolean active, @NotNull State<String> stream, @N
         return new TextInputContext(active, State.immutable(stream.value() + content), State.immutable(additional.value() + content), reset);
     }
 
+    /**
+     * Removes the last Unicode code point from both {@link #stream} and {@link #additional}, keeping them aligned
+     * like {@link #append}.
+     */
+    public @NotNull TextInputContext deleteLastCodePoint() {
+        String s = stream.value();
+        String a = additional.value();
+        if (s.isEmpty() && a.isEmpty()) {
+            return this;
+        }
+        String ns = s.isEmpty() ? s : s.substring(0, s.offsetByCodePoints(s.length(), -1));
+        String na = a.isEmpty() ? a : a.substring(0, a.offsetByCodePoints(a.length(), -1));
+        return new TextInputContext(active, State.immutable(ns), State.immutable(na), reset);
+    }
+
     public @NotNull TextInputContext withReset(boolean reset) {
         return new TextInputContext(active, stream, additional, reset);
     }

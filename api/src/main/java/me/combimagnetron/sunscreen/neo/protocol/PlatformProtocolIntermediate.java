@@ -3,6 +3,7 @@ package me.combimagnetron.sunscreen.neo.protocol;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.passport.util.math.Vec3f;
+import me.combimagnetron.sunscreen.nativeui.NativeUi;
 import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
@@ -11,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 
-public interface PlatformProtocolIntermediate<I> {
+public interface PlatformProtocolIntermediate<I> extends NativeUi {
 
     EntityReference<?> spawnAndRideHorse(@NotNull SunscreenUser<?> user, @NotNull Location location);
 

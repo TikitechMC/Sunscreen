@@ -5,10 +5,14 @@ packetevents = "2.11.2"
 jackson = "2.20.1"
 creative = "1.11.8"
 paper = "1.21.11-R0.1-SNAPSHOT"
+minecraft = "1.21.1"
+loom = "1.16-SNAPSHOT"
+fabric-loader = "0.18.3"
 
 [libraries]
 passport = { group = "me.combimagnetron", name = "Passport", version = "1.0-SNAPSHOT" }
 paper = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper" }
+fabric-loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabric-loader" }
 # --- Minecraft ---
 # Lamp Command Framework
 lamp-common = { group = "io.github.revxrsal", name = "lamp.common", version.ref = "lamp" }

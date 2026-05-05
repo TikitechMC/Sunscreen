@@ -5,6 +5,7 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import me.combimagnetron.passport.Passport;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.sunscreen.command.SunscreenCommand;
+import me.combimagnetron.sunscreen.nativeui.SpigotNativeUiNetworking;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.AtlasFont;
 import me.combimagnetron.sunscreen.neo.registry.Registries;
 import me.combimagnetron.sunscreen.placeholder.PapiPlaceholderProvider;
@@ -30,6 +31,7 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
     private Lamp<BukkitCommandActor> lamp;
     private SunscreenLibrary<SunscreenPlugin, Player, ItemStack> library;
     private UserManager userManager;
+    private SpigotNativeUiNetworking nativeUiNetworking;
 
 
     @Override
@@ -49,6 +51,8 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
         Passport.Holder.INSTANCE = library.passport();
         this.getDataFolder().mkdirs();
         this.userManager = new UserManager(this);
+        this.nativeUiNetworking = new SpigotNativeUiNetworking(this);
+        this.nativeUiNetworking.registerChannels();
         folders();
         commands();
         //menus();
@@ -122,6 +126,9 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (nativeUiNetworking != null) {
+            nativeUiNetworking.unregisterChannels();
+        }
         PacketEvents.getAPI().terminate();
     }
 

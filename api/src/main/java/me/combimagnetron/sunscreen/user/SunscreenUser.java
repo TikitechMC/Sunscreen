@@ -19,4 +19,9 @@ public interface SunscreenUser<T extends Audience> extends User<T> {
 
     @NotNull Location eyeLocation();
 
+    boolean useNativeUi();
+
+    default void setNativeUi(boolean enabled) {
+    }
+
 }

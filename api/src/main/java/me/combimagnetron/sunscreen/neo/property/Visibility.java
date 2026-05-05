@@ -26,7 +26,7 @@ public record Visibility(boolean hide) implements Property<Boolean, Visibility> 
 
     @Override
     public @NotNull PropertyHandler<Visibility> handler() {
-        return (_, _, _) -> null;
+        return (e, r, v) -> null;
     }
 
 }

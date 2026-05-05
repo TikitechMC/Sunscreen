@@ -71,7 +71,7 @@ public interface Elements {
     }
 
     static @NotNull ButtonElement button(@NotNull Identifier identifier, @NotNull Text text) {
-        return new ButtonElement(identifier, text, Vec2i.zero());
+        return new ButtonElement(identifier, text);
     }
 
     static @NotNull ButtonElement button(@NotNull Identifier identifier, @NotNull Text text, @NotNull Vec2i position) {

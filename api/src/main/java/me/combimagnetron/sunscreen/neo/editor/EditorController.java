@@ -156,7 +156,7 @@ public class EditorController {
         int y = 11;
         for (ArgumentInfo.TypeInfo typeInfo : provider.arguments().argumentTypes()) {
             Argument<?> argument = typeInfo.type().getConstructor().newInstance();
-            providerArgumentMap.computeIfAbsent(provider, (_) -> new ArrayList<>());
+            providerArgumentMap.computeIfAbsent(provider, (e) -> new ArrayList<>());
             providerArgumentMap.get(provider).add(argument);
             Collection<ModernElement<?, Canvas>> elements = (Collection<ModernElement<?, Canvas>>) argument.fields(Vec2i.of(0, y + 11));
             for (ModernElement<?, Canvas> element : elements) {

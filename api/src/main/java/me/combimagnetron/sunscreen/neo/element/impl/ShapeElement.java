@@ -1,6 +1,7 @@
 package me.combimagnetron.sunscreen.neo.element.impl;
 
 import me.combimagnetron.passport.util.data.Identifier;
+import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.element.GenericModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.sunscreen.neo.graphic.color.Color;
@@ -22,6 +23,15 @@ public class ShapeElement extends GenericModernElement<ShapeElement, Canvas> {
 
     public ShapeElement(@NotNull Identifier identifier, @NotNull Shape shape) {
         this(identifier, shape, Color.of(255, 255, 255));
+    }
+
+    public @NotNull Shape shape() {
+        return shape;
+    }
+
+    @Override
+    public @Nullable Vec2i intrinsicSize() {
+        return shape.squareSize();
     }
 
     @Override
