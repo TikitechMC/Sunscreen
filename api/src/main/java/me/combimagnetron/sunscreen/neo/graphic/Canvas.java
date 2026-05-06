@@ -14,6 +14,8 @@ import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -24,7 +26,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.BitSet;
 
-public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLike<Canvas> {
+public record Canvas(BufferedColorSpace bufferedColorSpace, Optional<String> classpathResource) implements GraphicLike<Canvas> {
+
+    public Canvas(BufferedColorSpace bufferedColorSpace) {
+        this(bufferedColorSpace, Optional.empty());
+    }
 
     public Canvas(Vec2i size) {
         this(new BufferedColorSpace(size));
@@ -70,7 +76,8 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
     }
 
     public static @NotNull Canvas resource(@NotNull String string) {
-        return file(FileProvider.resource().find(string).toPath());
+        Canvas loaded = file(FileProvider.resource().find(string).toPath());
+        return new Canvas(loaded.bufferedColorSpace(), Optional.of(string));
     }
 
     public static @NotNull Canvas empty(@NotNull Vec2i size) {
@@ -146,7 +153,7 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
     }
 
     public @NotNull Canvas trim() {
-        return new Canvas(bufferedColorSpace.trim());
+        return new Canvas(bufferedColorSpace.trim(), classpathResource);
     }
 
     public @NotNull Canvas erase(@NotNull Vec2i position) {
@@ -155,11 +162,11 @@ public record Canvas(BufferedColorSpace bufferedColorSpace) implements GraphicLi
     }
 
     public @NotNull Canvas scale(float scale) {
-        return new Canvas(bufferedColorSpace.scale(scale));
+        return new Canvas(bufferedColorSpace.scale(scale), classpathResource);
     }
 
     public @NotNull Canvas sub(@NotNull Vec2i position, @NotNull Vec2i size) {
-        return new Canvas(bufferedColorSpace.sub(position.x(), position.y(), size.x(), size.y()));
+        return new Canvas(bufferedColorSpace.sub(position.x(), position.y(), size.x(), size.y()), classpathResource);
     }
 
     public @NotNull Canvas text(@NotNull Text text, @NotNull Vec2i position) {

@@ -104,7 +104,7 @@ public class InputHandler {
     public void anvil(boolean shouldClear) {
         TextInputContext context = context(TextInputContext.class);
         String current = context.stream().value();
-        SunscreenLibrary.library().intermediate().openEmptyAnvil(activeMenu.user());
+        activeMenu.openVanillaTextCapture(activeMenu.user());
         peek(TextInputContext.class, old -> old.withActive(true), user());
         boolean reset = context(TextInputContext.class).reset();
         if (!shouldClear && reset) {

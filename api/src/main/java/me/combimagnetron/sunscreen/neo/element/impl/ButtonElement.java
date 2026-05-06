@@ -13,10 +13,6 @@ import me.combimagnetron.sunscreen.neo.graphic.text.Text;
 import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.color.TextColor;
 import me.combimagnetron.sunscreen.neo.input.InputHandler;
 import me.combimagnetron.sunscreen.neo.input.ListenerReferences;
-import me.combimagnetron.sunscreen.neo.input.base.Action;
-import me.combimagnetron.sunscreen.neo.input.base.Module;
-import me.combimagnetron.sunscreen.neo.input.base.MouseInputBase;
-import me.combimagnetron.sunscreen.neo.input.base.impl.Modules;
 import me.combimagnetron.sunscreen.neo.input.context.MouseInputContext;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.property.Visibility;
@@ -34,7 +30,9 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     private Text text;
     private ElementPhase phase = ElementPhase.DEFAULT;
     private int click = 0;
+    private boolean wasLeftPressed = false;
     private Vec2i textPosition = Vec2i.zero();
+    private boolean autoCenterText = false;
     private Canvas canvas;
 
     public ButtonElement(@NotNull Identifier identifier) {
@@ -48,6 +46,12 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
             this.textPosition = textPosition;
     }
 
+    public ButtonElement(@NotNull Identifier identifier, @Nullable Text label) {
+        super(identifier);
+        this.text = label;
+        this.autoCenterText = true;
+    }
+
     @Override
     protected void lateInit() {
         super.lateInit();
@@ -59,13 +63,27 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         Vec2i size = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
     }
 
+    public @Nullable Text text() {
+        return text;
+    }
+
     public @NotNull ButtonElement text(@Nullable Text text) {
         this.text = text;
         return this;
     }
 
+    public @NotNull Vec2i textPosition() {
+        return textPosition;
+    }
+
     public @NotNull ButtonElement textPosition(@Nullable Vec2i position) {
         this.textPosition = position;
+        this.autoCenterText = false;
+        return this;
+    }
+
+    public @NotNull ButtonElement autoCenterText(boolean autoCenterText) {
+        this.autoCenterText = autoCenterText;
         return this;
     }
 
@@ -80,21 +98,36 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         final MouseInputContext context = event.context();
         Vec2i cursor = context.position();
         boolean hover = HoverHelper.in(this, cursor);
-        if (hover && context.leftPressed())
+        boolean leftPressed = context.leftPressed();
+        boolean releaseInside = hover && wasLeftPressed && !leftPressed && click > 0;
+        if (hover && leftPressed)
             click = 3;
         InputHandler handler = inputHandler();
-        if (phase == ElementPhase.DISABLED) return;
+        if (phase == ElementPhase.DISABLED) {
+            wasLeftPressed = leftPressed;
+            return;
+        }
         if (!hover && phase != ElementPhase.DEFAULT) {
             phase = ElementPhase.DEFAULT;
             handler.cursor(CursorStyle.pointer());
+            wasLeftPressed = leftPressed;
             return;
         }
         Visibility visibility = visibility();
-        if (visibility.hide())
+        if (visibility.hide()) {
+            wasLeftPressed = leftPressed;
             return;
-        if (click == 1) {
+        }
+        if (releaseInside) {
+            Vec2i elementSize = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
             Dispatcher.dispatcher()
-                    .post(new UserClickElementEvent<>(event.user(), this, cursor.sub(position().value())));
+                .post(new UserClickElementEvent<>(event.user(), this, cursor.sub(position().resolve(elementSize))));
+            click = 0;
+        }
+        if (click == 1) {
+            Vec2i elementSize = PropertyHelper.vectorOrThrow(size(), Vec2i.class);
+            Dispatcher.dispatcher()
+                    .post(new UserClickElementEvent<>(event.user(), this, cursor.sub(position().resolve(elementSize))));
         }
         if (click > 0) {
             click -= 1;
@@ -103,6 +136,11 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
             phase = ElementPhase.HOVER;
             handler.cursor(CursorStyle.click());
         }
+        if (click == 0 && hover && !context.leftPressed() && phase == ElementPhase.CLICK) {
+            phase = ElementPhase.HOVER;
+            handler.cursor(CursorStyle.click());
+        }
+        wasLeftPressed = leftPressed;
     }
 
     public @NotNull ButtonElement disabled(boolean disabled) {
@@ -142,7 +180,15 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
             Text buttonText = text;
             if (phase == ElementPhase.DISABLED) buttonText.color(TextColor.color(Color.of(93, 93, 93)));
             else buttonText.color(TextColor.color(Color.of(255, 255, 255)));
-            button.place(buttonText.render(size, context), textPosition);
+            Canvas renderedText = buttonText.render(size, context).trim();
+            Vec2i placePosition = textPosition;
+            if (autoCenterText) {
+                placePosition = Vec2i.of(
+                    (sizeVec.x() - renderedText.size().x()) / 2,
+                    (sizeVec.y() - renderedText.size().y()) / 2
+                );
+            }
+            button.place(renderedText, placePosition);
         }
         // button.modifier(GraphicModifiers.mask(Shape.rectangle(Vec2i.of(20, 20)),
         // ModifierContext.of()));
@@ -168,5 +214,4 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         }
 
     }
-
 }

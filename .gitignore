@@ -21,6 +21,7 @@ gradle.properties
 
 # Run server task files
 spigot/run/
+fabric/run/
 
 # Generated files
 .idea/**/contentModel.xml
@@ -185,3 +186,7 @@ gradle-app.setting
 # .DS-STORE
 **/.DS_Store
 gradle.properties
+
+# Resourcepack
+/resourcepack/
+api/src/main/resources/

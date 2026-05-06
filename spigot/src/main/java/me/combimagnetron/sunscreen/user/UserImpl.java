@@ -32,6 +32,7 @@ public class UserImpl implements SunscreenUser<Player> {
     private final ClientVersion version;
     private final float fov = 70;
     private final ScreenInfo screenInfo = new ScreenInfo(new Viewport(Vec2i.of(800, 450), Vec2i.of(800, 450), Vec2i.zero()));
+    private volatile boolean nativeUi;
 
     public static UserImpl of(Player player) {
         return new UserImpl(player);
@@ -134,6 +135,16 @@ public class UserImpl implements SunscreenUser<Player> {
     @Override
     public void resendInv() {
         player.updateInventory();
+    }
+
+    @Override
+    public boolean useNativeUi() {
+        return nativeUi;
+    }
+
+    @Override
+    public void setNativeUi(boolean enabled) {
+        this.nativeUi = enabled;
     }
 
     public static class PacketEventsConnectionImpl<T> implements Connection {

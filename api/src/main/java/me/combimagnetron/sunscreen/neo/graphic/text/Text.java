@@ -84,4 +84,18 @@ public sealed interface Text extends Renderable<Size, Canvas> permits TextImpl {
 
     @NotNull Text append(@NotNull Text text);
 
+    /**
+     * Plain text for network snapshots (best-effort; only {@link TextImpl} trees are supported).
+     */
+    default @NotNull String networkPlain() {
+        if (this instanceof TextImpl impl) {
+            StringBuilder sb = new StringBuilder(impl.contentString());
+            for (Text child : impl.children()) {
+                sb.append(child.networkPlain());
+            }
+            return sb.toString();
+        }
+        throw new IllegalArgumentException("Unsupported text type for network encoding: " + getClass().getName());
+    }
+
 }

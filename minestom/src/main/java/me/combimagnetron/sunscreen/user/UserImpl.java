@@ -115,4 +115,9 @@ public class UserImpl implements SunscreenUser<Player> {
         player.getInventory().update();
     }
 
+    @Override
+    public boolean useNativeUi() {
+        return false;
+    }
+
 }

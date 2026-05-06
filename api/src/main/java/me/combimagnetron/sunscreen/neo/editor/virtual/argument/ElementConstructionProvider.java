@@ -158,7 +158,7 @@ public interface ElementConstructionProvider<M extends ModernElement<M, Canvas>>
     }
 
     static void defaults() {
-        Registry<ElementConstructionProvider<?>> elementConstructionProviderRegistry = Registries.constructionProviders();
+        Registry<ElementConstructionProvider<?>, Identifier> elementConstructionProviderRegistry = Registries.constructionProviders();
         for (ElementConstructionProvider<?> provider : PROVIDERS) {
             Registries.register(elementConstructionProviderRegistry, provider);
         }

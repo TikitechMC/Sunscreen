@@ -3,6 +3,7 @@ package me.combimagnetron.sunscreen.neo.element.impl;
 import me.combimagnetron.sunscreen.neo.element.GenericModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.GraphicLike;
 import me.combimagnetron.passport.util.data.Identifier;
+import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,11 @@ public class ImageElement<G extends GraphicLike<G>> extends GenericModernElement
     public ImageElement(@NotNull Identifier identifier, @NotNull G graphicLike) {
         super(identifier);
         this.graphic = graphicLike;
+    }
+
+    @Override
+    public @Nullable Vec2i intrinsicSize() {
+        return graphic.bufferedColorSpace().size();
     }
 
     @Override

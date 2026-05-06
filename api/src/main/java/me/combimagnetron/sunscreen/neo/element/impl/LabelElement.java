@@ -7,7 +7,6 @@ import me.combimagnetron.sunscreen.neo.element.GenericModernElement;
 import me.combimagnetron.sunscreen.neo.graphic.Canvas;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.sunscreen.neo.graphic.text.Text;
-import me.combimagnetron.sunscreen.neo.graphic.text.style.impl.font.FontProperties;
 import me.combimagnetron.sunscreen.neo.property.Size;
 import me.combimagnetron.sunscreen.neo.render.engine.context.RenderContext;
 import me.combimagnetron.sunscreen.util.helper.PropertyHelper;
@@ -33,6 +32,14 @@ public class LabelElement extends GenericModernElement<LabelElement, Canvas> {
         MutableState<Text> componentMutableState = (MutableState<Text>) componentState;
         componentMutableState.observe((old, current) -> {
         });
+    }
+
+    @Override
+    public @Nullable Vec2i intrinsicSize() {
+        return text.value()
+            .render(Size.fixed(Vec2i.of(4096, 1024)), null)
+            .trim()
+            .size();
     }
 
     @Override

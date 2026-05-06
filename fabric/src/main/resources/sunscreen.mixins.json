@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "me.combimagnetron.sunscreen.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerCommonPacketListenerImplMixin",
+    "ServerGamePacketListenerImplMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

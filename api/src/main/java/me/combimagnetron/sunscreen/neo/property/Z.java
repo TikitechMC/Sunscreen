@@ -21,7 +21,7 @@ public record Z(float value) implements Property<Float, Z> {
 
     @Override
     public @NotNull PropertyHandler<Z> handler() {
-        return (_, _, _) -> null;
+        return (e, r, z) -> null;
     }
 
 }

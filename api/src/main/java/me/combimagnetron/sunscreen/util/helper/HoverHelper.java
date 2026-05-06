@@ -14,9 +14,9 @@ public class HoverHelper {
     public static <E extends ElementLike<E>> boolean in(@NotNull ElementLike<E> elementLike, @NotNull Vec2i cursor) {
         final Position position = elementLike.propOrThrow(Position.class);
         final Size size = elementLike.propOrThrow(Size.class);
-        Vec2i vecPosition = position.value();
         Vec2i vecSize = size.value();
-        if (vecPosition == null || vecSize == null) return false;
+        if (position.value() == null || vecSize == null) return false;
+        Vec2i vecPosition = position.resolve(vecSize);
         return in(vecPosition, vecSize, cursor);
     }
 
@@ -29,7 +29,12 @@ public class HoverHelper {
     public static <E extends ElementLike<E>> boolean in(@NotNull ElementLike<E> elementLike, @NotNull Viewport viewport) {
         Vec2i vecPosition = viewport.position();
         Vec2i vecSize = viewport.currentView();
-        Vec2i elementPosition = elementLike.propOrThrow(Position.class).value();
+        Position position = elementLike.propOrThrow(Position.class);
+        Size size = elementLike.propOrThrow(Size.class);
+        Vec2i elementSize = size.value();
+        Vec2i anchor = position.value();
+        if (elementSize == null || anchor == null) return false;
+        Vec2i elementPosition = position.resolve(elementSize);
         boolean xCheck = (elementPosition.x() >= vecPosition.x() && elementPosition.x() <= vecPosition.x() + vecSize.x());
         boolean yCheck = (elementPosition.y() >= vecPosition.y() && elementPosition.y() <= vecPosition.y() + vecSize.y());
         return xCheck && yCheck;

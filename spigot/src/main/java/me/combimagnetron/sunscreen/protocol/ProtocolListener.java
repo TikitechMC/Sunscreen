@@ -199,6 +199,9 @@ public class ProtocolListener implements PacketListener {
         event.setCancelled(true);
         final Session session = user.session();
         if (session == null) return;
+        if (session.menu().useNativeClientPath()) {
+            return;
+        }
         final InputHandler inputHandler = session.menu().inputHandler();
         float rawYaw = wrapperPlayClientPlayerRotation.getYaw();
         float yaw = ((rawYaw + 360/2f) % 360 + 360) % 360 - 360/2f;

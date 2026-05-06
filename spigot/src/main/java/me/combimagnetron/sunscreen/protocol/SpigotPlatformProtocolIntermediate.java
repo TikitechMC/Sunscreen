@@ -37,8 +37,11 @@ import me.combimagnetron.passport.internal.entity.impl.passive.horse.Horse;
 import me.combimagnetron.passport.internal.entity.impl.tile.ItemFrame;
 import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.internal.network.Connection;
+import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.user.User;
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.sunscreen.SunscreenLibrary;
+import me.combimagnetron.sunscreen.SunscreenPlugin;
 import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.input.context.TextInputContext;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
@@ -51,6 +54,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class SpigotPlatformProtocolIntermediate implements PlatformProtocolIntermediate<org.bukkit.inventory.ItemStack> {
@@ -345,6 +349,25 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
                                         component(ComponentTypes.EQUIPPABLE,
                                                 new ItemEquippable(EquipmentSlot.BODY, Sounds.ITEM_ARMOR_EQUIP_GENERIC, new ResourceLocation("sunscreen", texturePath), null, null, false, false, false)).build())));
 
+    }
+
+    private static @NotNull SunscreenPlugin plugin() {
+        Object plugin = SunscreenLibrary.library().plugin();
+        if (plugin instanceof SunscreenPlugin spigotPlugin) {
+            return spigotPlugin;
+        }
+        throw new IllegalStateException("Expected SunscreenPlugin for Spigot native UI transport");
+    }
+
+    @Override
+    public void serverToClient(@NotNull SunscreenUser<?> user, @NotNull ByteBuffer payloadPacket) {
+        if (!(user.platformSpecificPlayer() instanceof Player player)) {
+            return;
+        }
+        ByteBuffer copy = payloadPacket.slice();
+        byte[] out = new byte[copy.remaining()];
+        copy.get(out);
+        player.sendPluginMessage(plugin(), me.combimagnetron.sunscreen.nativeui.NativeUi.CHANNEL, out);
     }
 
 }

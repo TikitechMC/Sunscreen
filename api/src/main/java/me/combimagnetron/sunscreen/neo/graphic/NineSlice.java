@@ -24,6 +24,11 @@ public final class NineSlice {
         return new NineSlice(canvas, List.of(corners));
     }
 
+    /** Base image before slicing (used for native UI wire capture). */
+    public @NotNull Canvas sourceCanvas() {
+        return canvas;
+    }
+
     private NineSlice(@NotNull Canvas canvas) {
         this.canvas = canvas;
         final Vec2i size = canvas.size();
