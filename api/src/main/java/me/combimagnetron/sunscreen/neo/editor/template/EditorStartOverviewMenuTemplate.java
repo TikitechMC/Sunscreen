@@ -90,6 +90,18 @@ public class EditorStartOverviewMenuTemplate implements MenuTemplate {
                 Canvas.resource("projects_label.png")
             ).position(Position.fixed(position.sub(0, 21)))
         ).element(
+            Elements.image(
+                Identifier.of("new_project/preview/back_shape"),
+                Canvas.empty(Vec2i.of(112, 72))
+                    .fill(Vec2i.zero(), Vec2i.of(112, 72), Color.of(27, 27, 27))
+                    .text(Text.vanilla("Untitled Project"), Vec2i.of(1, 1))
+            ).position(Position.fixed(Vec2i.of(275, 111)))
+        ).element(
+            Elements.image(
+                Identifier.of("new_project/preview/preview"),
+                Canvas.resource("editor_assets/preview_l.png").scale(0.2396514161f)
+            ).position(Position.fixed(Vec2i.of(276, 121)))
+        ).element(
             Layout.group(
                 Identifier.of("new_project/wizard"),
                 EditorElements.frame(

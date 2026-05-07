@@ -1,7 +1,7 @@
 [versions]
 lamp = "4.0.0-rc.16"
 adventure = "4.25.0"
-packetevents = "2.11.2"
+packetevents = "2.12.1"
 jackson = "2.20.1"
 creative = "1.11.8"
 paper = "1.21.11-R0.1-SNAPSHOT"

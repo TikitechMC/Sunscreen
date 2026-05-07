@@ -1,13 +1,14 @@
 package me.combimagnetron.sunscreen.neo.file.adapter;
 
+import me.combimagnetron.passport.internal.registry.Registry;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
 import me.combimagnetron.passport.util.math.Vec4i;
-import me.combimagnetron.sunscreen.neo.element.Elements;
-import me.combimagnetron.sunscreen.neo.element.impl.ButtonElement;
+import me.combimagnetron.sunscreen.neo.editor.virtual.argument.ElementConstructionProvider;
 import me.combimagnetron.sunscreen.neo.file.PackedMenu;
 import me.combimagnetron.sunscreen.neo.file.XmlEncodable;
 import me.combimagnetron.sunscreen.neo.property.*;
+import me.combimagnetron.sunscreen.neo.registry.Registries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
@@ -16,14 +17,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringBufferInputStream;
-import java.io.StringWriter;
 import java.util.*;
 
 public interface PropertyAdapter<P extends Property<?, P>> extends XmlEncodable<P> {
@@ -248,6 +244,7 @@ public interface PropertyAdapter<P extends Property<?, P>> extends XmlEncodable<
             return Padding.class;
         }
 
+
     }
 
     class ScalePropertyAdapter implements PropertyAdapter<Scale> {
@@ -281,6 +278,7 @@ public interface PropertyAdapter<P extends Property<?, P>> extends XmlEncodable<
         public Class<Scale> type() {
             return Scale.class;
         }
+
 
     }
 
@@ -448,6 +446,13 @@ public interface PropertyAdapter<P extends Property<?, P>> extends XmlEncodable<
     //root for weird language stuff with lowercase
     static @NotNull String low(@NotNull String string) {
         return string.toLowerCase(Locale.ROOT);
+    }
+
+    static void defaults() {
+        Registry<PropertyAdapter<?>, String> registry = Registries.advanced().propertyAdapters();
+        for (PropertyAdapter<?> adapter : ADAPTERS) {
+            registry.register(adapter.getClass().getSimpleName().toLowerCase().replace("adapter", ""), adapter);
+        }
     }
 
 }

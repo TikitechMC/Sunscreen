@@ -18,6 +18,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    failOnNoDiscoveredTests = false
 }
 
 tasks.register<JavaExec>("jmh") {

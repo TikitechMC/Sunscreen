@@ -27,7 +27,7 @@ public class TestItemMenuTemplate implements MenuTemplate {
                 Identifier.of("test"),
                 Item.item(ItemStack.of(Material.BROWN_BANNER))
             ).rotation(Rotation.of(96.8f, 45.4f, 78.1f)).position(Position.fixed(Vec2i.of(460, 540))));
-        root.element(Elements.image(Identifier.of("wowzers"), Canvas.resource("normal.png")).position(Position.fixed(Vec2i.of(300, 120))));
+        //root.element(Elements.image(Identifier.of("wowzers"), Canvas.resource("normal.png")).position(Position.fixed(Vec2i.of(300, 120))));
     }
 
 }

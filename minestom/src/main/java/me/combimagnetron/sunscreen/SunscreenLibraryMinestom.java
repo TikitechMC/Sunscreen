@@ -11,6 +11,7 @@ import me.combimagnetron.sunscreen.user.UserManager;
 import net.kyori.adventure.audience.Audience;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
+import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import org.slf4j.Logger;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-public class SunscreenLibraryMinestom implements SunscreenLibrary<Object, Player> {
+public class SunscreenLibraryMinestom implements SunscreenLibrary<Object, Player, ItemStack> {
     private final MinestomPlatformProtocolIntermediate protocolIntermediate = new MinestomPlatformProtocolIntermediate();
     private final SessionHandler sessionHandler = new SessionHandler();
     private final UserManager userManager = new UserManager();
@@ -90,7 +91,7 @@ public class SunscreenLibraryMinestom implements SunscreenLibrary<Object, Player
     }
 
     @Override
-    public @NotNull PlatformProtocolIntermediate intermediate() {
+    public @NotNull PlatformProtocolIntermediate<ItemStack> intermediate() {
         return protocolIntermediate;
     }
 

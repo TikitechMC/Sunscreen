@@ -28,6 +28,7 @@ import me.combimagnetron.sunscreen.neo.session.Session;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
 import me.combimagnetron.sunscreen.util.IdentifierHolder;
 import me.combimagnetron.sunscreen.util.Scheduler;
+import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +51,7 @@ public class ActiveMenu implements IdentifierHolder {
         this.initialRotation = user.rotation();
         this.user = user;
         this.identifier = identifier;
-        PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
+        PlatformProtocolIntermediate<?> intermediate = SunscreenLibrary.library().intermediate();
         intermediate.gameTime(user);
         show(template);
         Location location = user.eyeLocation();
@@ -60,7 +61,7 @@ public class ActiveMenu implements IdentifierHolder {
     }
 
     public void show(@NotNull MenuTemplate template) {
-        PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
+        PlatformProtocolIntermediate<?> intermediate = SunscreenLibrary.library().intermediate();
         if (renderPipeline != null) {
             renderPipeline.stop();
             loadedComponents.clear();
@@ -130,7 +131,7 @@ public class ActiveMenu implements IdentifierHolder {
     }
 
     public @NotNull ActiveMenu cursor(@NotNull CursorStyle style) {
-        PlatformProtocolIntermediate protocolIntermediate = SunscreenLibrary.library().intermediate();
+        PlatformProtocolIntermediate<?> protocolIntermediate = SunscreenLibrary.library().intermediate();
         protocolIntermediate.setHorseArmor(user, style.asset());
         return this;
     }
@@ -144,7 +145,7 @@ public class ActiveMenu implements IdentifierHolder {
         renderPipeline.stop();
         loadedComponents.clear();
         inputHandler.close();
-        PlatformProtocolIntermediate intermediate = SunscreenLibrary.library().intermediate();
+        PlatformProtocolIntermediate<?> intermediate = SunscreenLibrary.library().intermediate();
         intermediate.removeMaps(user);
         intermediate.reset(user, initialRotation);
     }

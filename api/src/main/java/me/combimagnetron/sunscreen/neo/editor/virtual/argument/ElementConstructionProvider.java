@@ -3,9 +3,6 @@ package me.combimagnetron.sunscreen.neo.editor.virtual.argument;
 import me.combimagnetron.passport.internal.registry.Registry;
 import me.combimagnetron.passport.util.data.Identifier;
 import me.combimagnetron.passport.util.math.Vec2i;
-import me.combimagnetron.sunscreen.SunscreenLibrary;
-import me.combimagnetron.sunscreen.neo.ActiveMenu;
-import me.combimagnetron.sunscreen.neo.editor.element.MultiEntryFieldElement;
 import me.combimagnetron.sunscreen.neo.editor.virtual.argument.impl.*;
 import me.combimagnetron.sunscreen.neo.element.Elements;
 import me.combimagnetron.sunscreen.neo.element.ModernElement;
@@ -22,9 +19,6 @@ import me.combimagnetron.sunscreen.neo.registry.Registries;
 import me.combimagnetron.sunscreen.neo.theme.decorator.Target;
 import me.combimagnetron.sunscreen.util.IdentifierHolder;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
-
-import java.util.function.Consumer;
 
 public interface ElementConstructionProvider<M extends ModernElement<M, Canvas>> extends IdentifierHolder {
 
@@ -158,7 +152,7 @@ public interface ElementConstructionProvider<M extends ModernElement<M, Canvas>>
     }
 
     static void defaults() {
-        Registry<ElementConstructionProvider<?>> elementConstructionProviderRegistry = Registries.constructionProviders();
+        Registry<ElementConstructionProvider<?>, Identifier> elementConstructionProviderRegistry = Registries.advanced().constructionProviders();
         for (ElementConstructionProvider<?> provider : PROVIDERS) {
             Registries.register(elementConstructionProviderRegistry, provider);
         }

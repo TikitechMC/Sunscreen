@@ -1,3 +1,4 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
@@ -54,6 +55,7 @@ tasks {
             exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:1.7.22"))
             exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22"))
         }
+        relocate("com.github.retrooper.packetevents", "me.combimagnetron.shaded.packetevents.api")
         relocate("io.github.retrooper.packetevents", "me.combimagnetron.shaded.packetevents.impl")
     }
 }
@@ -69,9 +71,6 @@ tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
 }
-
-val betterHudVersion = "1.12.2"
-val adventureVersion = "4.20.0"
 
 fun libs(): LibrariesForLibs {
     return rootProject.libs
@@ -94,6 +93,32 @@ paper {
     foliaSupported = true
     version = project.version.toString()
     authors = listOf("Combimagnetron")
+    serverDependencies {
+        register("ProtocolLib") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("ProtocolSupport") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("ViaVersion") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("ViaBackwards") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("ViaRewind") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("Geyser-Spigot") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+    }
     description = "Create UIs like never seen before, all from within the game!"
     website = "https://sunscreen.combimagnetron.net"
 }

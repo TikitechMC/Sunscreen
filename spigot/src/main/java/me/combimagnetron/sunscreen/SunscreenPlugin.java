@@ -1,6 +1,7 @@
 package me.combimagnetron.sunscreen;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.settings.PacketEventsSettings;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import me.combimagnetron.passport.Passport;
 import me.combimagnetron.passport.util.data.Identifier;
@@ -10,6 +11,7 @@ import me.combimagnetron.sunscreen.neo.registry.Registries;
 import me.combimagnetron.sunscreen.placeholder.PapiPlaceholderProvider;
 import me.combimagnetron.sunscreen.user.UserManager;
 import me.combimagnetron.sunscreen.util.FileProvider;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.io.IOUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -34,7 +36,7 @@ public class SunscreenPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onLoad() {
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this, new PacketEventsSettings().debug(true).fullStackTrace(true)));
         PacketEvents.getAPI().load();
         //PacketEvents.getAPI().getEventManager().registerListener(new MenuListener(), PacketListenerPriority.LOWEST);
         //PacketEvents.getAPI().getEventManager().registerListener(new AnvilListener(), PacketListenerPriority.LOWEST);

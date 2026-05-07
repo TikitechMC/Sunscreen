@@ -3,6 +3,7 @@ package me.combimagnetron.sunscreen.neo.property;
 import me.combimagnetron.passport.internal.entity.metadata.type.Quaternion;
 import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.property.handler.PropertyHandler;
+import me.combimagnetron.sunscreen.util.helper.RotationHelper;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -34,8 +35,7 @@ public record Rotation(@NotNull Vec3f value) implements Property<Vec3f, Rotation
     }
 
     public @NotNull Quaternion quaternion() {
-        Quaternionf quaternionf = new Quaternionf().rotationXYZ(value.x(), value.y(), value.z());
-        return new Quaternion(quaternionf.x, quaternionf.y, quaternionf.z, quaternionf.w);
+        return RotationHelper.convert(value);
     }
 
     @Override

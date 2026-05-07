@@ -1,10 +1,13 @@
 package me.combimagnetron.sunscreen.util.helper;
 
+import me.combimagnetron.passport.internal.entity.metadata.type.Quaternion;
 import me.combimagnetron.passport.util.math.Vec2f;
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.render.ScreenInfo;
 import me.combimagnetron.sunscreen.neo.render.Viewport;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.jspecify.annotations.NonNull;
 
 public class RotationHelper {
@@ -26,7 +29,7 @@ public class RotationHelper {
         return new Vec2i(screenX, screenY);
     }
 
-    private static @NonNull Vec2f vec2f(float yawDegrees, float pitch, Vec2i viewportVec) {
+    private static @NotNull Vec2f vec2f(float yawDegrees, float pitch, Vec2i viewportVec) {
         float yaw = (float) Math.toRadians(yawDegrees);
 
         float cursorSize = 1.0f / CURSOR_SIZE;
@@ -43,4 +46,10 @@ public class RotationHelper {
 
         return pos.add(Vec2f.of(aspect, 1.0f).mul(scale).mul(rotated)).div(cursorSize);
     }
+
+    public static @NotNull Quaternion convert(@NotNull Vec3f rotation) {
+        Quaternionf quaternionf = new Quaternionf().rotationXYZ(rotation.x(), rotation.y(), rotation.z());
+        return new Quaternion(quaternionf.x, quaternionf.y, quaternionf.z, quaternionf.w);
+    }
+
 }

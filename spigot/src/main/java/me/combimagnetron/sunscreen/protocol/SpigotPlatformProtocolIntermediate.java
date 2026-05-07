@@ -39,12 +39,14 @@ import me.combimagnetron.passport.internal.entity.metadata.type.Vector3d;
 import me.combimagnetron.passport.internal.network.Connection;
 import me.combimagnetron.passport.user.User;
 import me.combimagnetron.passport.util.math.Vec2i;
+import me.combimagnetron.passport.util.math.Vec3f;
 import me.combimagnetron.sunscreen.neo.graphic.Item;
 import me.combimagnetron.sunscreen.neo.input.context.TextInputContext;
 import me.combimagnetron.sunscreen.neo.protocol.PlatformProtocolIntermediate;
 import me.combimagnetron.sunscreen.neo.protocol.type.EntityReference;
 import me.combimagnetron.sunscreen.neo.protocol.type.Location;
 import me.combimagnetron.sunscreen.user.SunscreenUser;
+import me.combimagnetron.sunscreen.util.helper.RotationHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -103,6 +105,7 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
         user.connection().send(passengers);
         user.connection().send(new WrapperPlayServerPlayerRotation(0f, -37.3f));
         entities.put(user.uniqueIdentifier(), horse.id().intValue(), horse);
+        player.sendActionBar(Component.text(" "));
         return new EntityReference<>(horse.id().intValue(), horse);
     }
 
@@ -321,7 +324,8 @@ public class SpigotPlatformProtocolIntermediate implements PlatformProtocolInter
     }
 
     private static int protocolVersion(@NotNull Player player) {
-        return PacketEvents.getAPI().getPlayerManager().getClientVersion(player).getProtocolVersion();
+        return PacketEvents.getAPI().getServerManager().getVersion().getProtocolVersion();
+        //return PacketEvents.getAPI().getPlayerManager().getClientVersion(player).getProtocolVersion();
     }
 
     private void hideTooltip(@NotNull SunscreenUser<?> user, @NotNull ItemStack itemStack) {
