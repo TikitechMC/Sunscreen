@@ -35,6 +35,7 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
     private ElementPhase phase = ElementPhase.DEFAULT;
     private int click = 0;
     private Vec2i textPosition = Vec2i.zero();
+    private boolean autoCenterText = false;
     private Canvas canvas;
 
     public ButtonElement(@NotNull Identifier identifier) {
@@ -46,6 +47,12 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
         text = label;
         if (textPosition != null)
             this.textPosition = textPosition;
+    }
+
+    public ButtonElement(@NotNull Identifier identifier, @Nullable Text label) {
+        super(identifier);
+        this.text = label;
+        this.autoCenterText = true;
     }
 
     @Override
@@ -66,6 +73,12 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
 
     public @NotNull ButtonElement textPosition(@Nullable Vec2i position) {
         this.textPosition = position;
+        this.autoCenterText = false;
+        return this;
+    }
+
+    public @NotNull ButtonElement autoCenterText(boolean autoCenterText) {
+        this.autoCenterText = autoCenterText;
         return this;
     }
 
@@ -142,7 +155,15 @@ public class ButtonElement extends GenericInteractableModernElement<ButtonElemen
             Text buttonText = text;
             if (phase == ElementPhase.DISABLED) buttonText.color(TextColor.color(Color.of(93, 93, 93)));
             else buttonText.color(TextColor.color(Color.of(255, 255, 255)));
-            button.place(buttonText.render(size, context), textPosition);
+            Canvas renderedText = buttonText.render(size, context).trim();
+            Vec2i placePosition = textPosition;
+            if (autoCenterText) {
+                placePosition = Vec2i.of(
+                    (sizeVec.x() - renderedText.size().x()) / 2,
+                    (sizeVec.y() - renderedText.size().y()) / 2
+                );
+            }
+            button.place(renderedText, placePosition);
         }
         // button.modifier(GraphicModifiers.mask(Shape.rectangle(Vec2i.of(20, 20)),
         // ModifierContext.of()));
